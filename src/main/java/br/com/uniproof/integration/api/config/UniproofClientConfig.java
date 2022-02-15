@@ -2,8 +2,8 @@ package br.com.uniproof.integration.api.config;
 
 import br.com.uniproof.integration.api.service.UniproofApiCoreService;
 import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
-import com.nimbusds.jwt.ReadOnlyJWTClaimsSet;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.Retryer;
@@ -67,7 +67,7 @@ public class UniproofClientConfig {
 			try {
 				JWT jwt = JWTParser.parse(token);
 				//Header header = jwt.getHeader();
-				ReadOnlyJWTClaimsSet jwtClaimSet = jwt.getJWTClaimsSet();
+				JWTClaimsSet jwtClaimSet = jwt.getJWTClaimsSet();
 				Date sync = new Date();
 				long iat = jwtClaimSet.getIssueTime().getTime();
 				long exp = jwtClaimSet.getExpirationTime().getTime();
