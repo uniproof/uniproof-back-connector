@@ -7,18 +7,24 @@ import br.com.uniproof.integration.api.config.UniproofApiConfig;
 import feign.FeignException;
 import feign.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -41,16 +47,42 @@ public class UniproofApiNotaryService {
 		uniproofNotaryClient.deleteAttachmentFromLotItem(lotItemId, attachmentId, notaryToken);
 	}
 
-	public byte[] getDocumentContentById(String documentId, String notaryToken) {
-		return uniproofNotaryClient.getDocumentContentById(documentId, notaryToken);
+	private Path responseToPath(Response response) {
+		if (response.status() == 200 ) {
+			try {
+				//response.headers();
+				String contentDisposition = response.headers().get("content-disposition").toArray()[0].toString();
+				Pattern pattern = Pattern.compile("\"(.*?)\"");
+				Matcher matcher = pattern.matcher(contentDisposition);
+
+				Path destFile = null;
+				if (matcher.find()) {
+					destFile = Files.createTempFile("tmp", "-"+matcher.group(1));
+				} else {
+					destFile = Files.createTempFile("tmp", "-nonamefile.pdf");
+				}
+				FileUtils.copyInputStreamToFile(response.body().asInputStream(), destFile.toFile());
+				return destFile;
+			} catch (IOException ioException) {
+				log.error("falha", ioException);
+			}
+		}
+		throw new RuntimeException("Erro ao buscar arquivo na plataforma");
 	}
 
-	public byte[] getDocumentVersionContentById(String documentId, Integer version, String notaryToken) {
-		return uniproofNotaryClient.getDocumentVersionContentById(documentId, version, notaryToken);
+	public Path getDocumentContentById(String documentId, String notaryToken) {
+		Response response = uniproofNotaryClient.getDocumentContentById(documentId, notaryToken);
+		return responseToPath(response);
 	}
 
-	public byte[] getDocumentOriginalContentById(String documentId, String notaryToken) {
-		return uniproofNotaryClient.getDocumentOriginalContentById(documentId, notaryToken);
+	public Path getDocumentVersionContentById(String documentId, Integer version, String notaryToken) {
+		Response response = uniproofNotaryClient.getDocumentVersionContentById(documentId, version, notaryToken);
+		return responseToPath(response);
+	}
+
+	public Path getDocumentOriginalContentById(String documentId, String notaryToken) {
+		Response response = uniproofNotaryClient.getDocumentOriginalContentById(documentId, notaryToken);
+		return responseToPath(response);
 	}
 
 	public Lot getLotById(String lotId, String notaryToken) {
@@ -59,6 +91,10 @@ public class UniproofApiNotaryService {
 
 	public String getLotJsonById(String lotId, String notaryToken) {
 		return uniproofNotaryClient.getLotJsonById(lotId, notaryToken);
+	}
+
+	public Object getLotJsonObjectById(String lotId, String notaryToken) {
+		return uniproofNotaryClient.getLotJsonObjectById(lotId, notaryToken);
 	}
 
 	public LotItem getLotItemById(String lotItemId, String companyToken) {

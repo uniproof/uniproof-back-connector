@@ -18,19 +18,19 @@ import java.util.List;
 public interface UniproofNotaryClient {
 
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/documents/{id}/download")
-    byte[] getDocumentContentById(
+    Response getDocumentContentById(
             @PathVariable("id") String documentId,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/documents/{id}/download?version=1")
-    byte[] getDocumentOriginalContentById(
+    Response getDocumentOriginalContentById(
             @PathVariable("id") String documentId,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/documents/{id}/download?version={version}")
-    byte[] getDocumentVersionContentById(
+    Response getDocumentVersionContentById(
             @PathVariable("id") String documentId,
             @PathVariable("version") Integer version,
             @RequestHeader("X-Company-Token") String notaryToken
@@ -44,6 +44,12 @@ public interface UniproofNotaryClient {
 
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/lots/{id}/json_data")
     String getLotJsonById(
+            @PathVariable("id") String lotId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @RequestMapping(method = RequestMethod.GET, value = "/notaries/lots/{id}/json_data")
+    Object getLotJsonObjectById(
             @PathVariable("id") String lotId,
             @RequestHeader("X-Company-Token") String notaryToken
     );
