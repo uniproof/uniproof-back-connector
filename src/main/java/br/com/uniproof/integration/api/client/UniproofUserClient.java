@@ -2,6 +2,7 @@ package br.com.uniproof.integration.api.client;
 
 import br.com.uniproof.integration.api.beans.*;
 import br.com.uniproof.integration.api.config.UniproofClientConfig;
+import feign.Headers;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -81,6 +82,7 @@ public interface UniproofUserClient {
     );
 
     @RequestMapping(method = RequestMethod.POST, value = "/api/lots/{lotId}/forms")
+    @Headers("Content-Type: application/json")
     FormResponse fillForm(
             @PathVariable("lotId") String lotId,
             @RequestBody Object form,

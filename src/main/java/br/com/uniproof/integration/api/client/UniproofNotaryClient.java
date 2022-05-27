@@ -3,6 +3,7 @@ package br.com.uniproof.integration.api.client;
 import br.com.uniproof.integration.api.beans.*;
 import br.com.uniproof.integration.api.config.UniproofClientConfig;
 import feign.Body;
+import feign.Headers;
 import feign.Param;
 import feign.Response;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -45,6 +46,14 @@ public interface UniproofNotaryClient {
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/lots/{id}/json_data")
     String getLotJsonById(
             @PathVariable("id") String lotId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @RequestMapping(method = RequestMethod.POST, value = "/notaries/lots/{id}/json_data")
+    @Headers("Content-Type: application/json")
+    Object setLotJsonObjectById(
+            @PathVariable("id") String lotId,
+            @RequestBody Object form,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 

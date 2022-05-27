@@ -97,6 +97,11 @@ public class UniproofApiNotaryService {
 		return uniproofNotaryClient.getLotJsonObjectById(lotId, notaryToken);
 	}
 
+	public Object setLotJsonObjectById(String lotId, Object object,  String notaryToken) {
+		return uniproofNotaryClient.setLotJsonObjectById(lotId, object, notaryToken);
+	}
+
+
 	public LotItem getLotItemById(String lotItemId, String companyToken) {
 		return uniproofNotaryClient.getLotItemById(lotItemId, companyToken);
 	}
