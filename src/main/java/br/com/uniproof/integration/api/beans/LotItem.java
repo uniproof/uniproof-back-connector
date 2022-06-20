@@ -19,6 +19,7 @@ public class LotItem {
     private Integer registeredVersion;
     private Integer lastEventId;
     private String notaryUserId;
+    private Long notaryId;
     private String protocol;
     private String archiverId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")

@@ -11,10 +11,18 @@ public class Wallet {
     private String ownerType;
     private String ownerId;
 
+    private BigDecimal balance;
+    private BigDecimal provisionedBalance;
     private BigDecimal currentBalance;
     private BigDecimal credit;
-    private BigDecimal balance;
 
     private Date createdAt;
     private Date updatedAt;
+
+    public BigDecimal getCurrentBalance() {
+        if (currentBalance == null) {
+            currentBalance = balance.subtract(provisionedBalance);
+        }
+        return currentBalance;
+    }
 }

@@ -6,12 +6,14 @@ import br.com.uniproof.integration.api.client.UniproofNotaryClient;
 import br.com.uniproof.integration.api.config.UniproofApiConfig;
 import feign.FeignException;
 import feign.Response;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -23,6 +25,7 @@ import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -359,4 +362,15 @@ public class UniproofApiNotaryService {
 				.build();
 		return uniproofNotaryClient.addBalanceLotItemWallet(walletRequest, notaryToken);
 	}
+
+	public Wallet getBalanceWallet(
+			@NonNull String ownerType,
+			@NonNull String ownerId,
+			String containerId,
+			@NonNull String notaryToken
+	) {
+		return uniproofNotaryClient.getBalanceWallet(ownerType,ownerId,containerId,notaryToken);
+	}
+
+
 }

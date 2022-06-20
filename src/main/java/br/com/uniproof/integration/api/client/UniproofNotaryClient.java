@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @FeignClient(name = "notaries", url = "${uniproof.api.restUrl}", configuration = UniproofClientConfig.class)
@@ -222,4 +223,11 @@ public interface UniproofNotaryClient {
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
+    @RequestMapping(method = RequestMethod.GET, value = "/notaries/{ownerType}/{ownerId}")
+    Wallet getBalanceWallet(
+            @PathVariable("ownerType") String ownerType,
+            @PathVariable("ownerId") String ownerId,
+            @PathVariable(name = "containerId", required = false) String containerId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
 }
