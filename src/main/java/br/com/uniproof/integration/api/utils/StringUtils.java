@@ -3,6 +3,7 @@ package br.com.uniproof.integration.api.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.beanutils.BeanUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -151,8 +152,7 @@ public class StringUtils {
 		}
 	}
 
-	public static String replaceString(String input, Map<String, Object> context)
-			throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+	public static String replaceString(String input, Map<String, Object> context) {
 		int position = 0;
 		StringBuffer result = new StringBuffer();
 
@@ -160,14 +160,20 @@ public class StringUtils {
 		while (m.find()) {
 			result.append(input, position, m.start());
 			String xpath = m.group(1);
-			String defaultNotFound = xpath;
+			String defaultNotFound = "";
 			if (xpath.contains(":-")) {
 				String[] split = xpath.split(":-");
 				xpath = split[0];
 				defaultNotFound = split[1];
 			}
-			String afterSearch = BeanUtils.getNestedProperty(context, xpath);
-			if (afterSearch != null) {
+			String afterSearch = null;
+
+			try {
+				afterSearch = BeanUtils.getNestedProperty(context, xpath);
+			} catch (Exception ignored) {
+			}
+
+			if (!ObjectUtils.isEmpty(afterSearch)) {
 				result.append(afterSearch);
 			} else {
 				result.append(defaultNotFound);

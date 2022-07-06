@@ -10,6 +10,8 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
@@ -42,25 +44,24 @@ public class UniproofApiNotaryService {
 	@Autowired
 	private UniproofApiConfig uniproofApiConfig;
 
-	public List<User> getRecipientsById(String ownerType, String ownerId, String notaryToken) {
-		return uniproofNotaryClient.getRecipientsById(ownerType, ownerId, notaryToken);
+	public List<User> getRecipientsById(String ownerType, String ownerId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getRecipientsById(ownerType, ownerId, notaryToken).getBody();
 	}
 
-	public void deleteAttachmentFromLotItem(String lotItemId, String attachmentId, String notaryToken) {
+	public void deleteAttachmentFromLotItem(String lotItemId, String attachmentId, @NonNull String notaryToken) {
 		uniproofNotaryClient.deleteAttachmentFromLotItem(lotItemId, attachmentId, notaryToken);
 	}
 
 	private Path responseToPath(Response response) {
-		if (response.status() == 200 ) {
+		if (response.status() == 200) {
 			try {
-				//response.headers();
 				String contentDisposition = response.headers().get("content-disposition").toArray()[0].toString();
 				Pattern pattern = Pattern.compile("\"(.*?)\"");
 				Matcher matcher = pattern.matcher(contentDisposition);
 
 				Path destFile = null;
 				if (matcher.find()) {
-					destFile = Files.createTempFile("tmp", "-"+matcher.group(1));
+					destFile = Files.createTempFile("tmp", "-" + matcher.group(1));
 				} else {
 					destFile = Files.createTempFile("tmp", "-nonamefile.pdf");
 				}
@@ -73,55 +74,89 @@ public class UniproofApiNotaryService {
 		throw new RuntimeException("Erro ao buscar arquivo na plataforma");
 	}
 
-	public Path getDocumentContentById(String documentId, String notaryToken) {
-		Response response = uniproofNotaryClient.getDocumentContentById(documentId, notaryToken);
+	private Path responseToPath(ResponseEntity<Resource> response) {
+		if (response.getStatusCodeValue() == 200) {
+			try {
+				String contentDisposition = response.getHeaders().get("content-disposition").toArray()[0].toString();
+				Pattern pattern = Pattern.compile("\"(.*?)\"");
+				Matcher matcher = pattern.matcher(contentDisposition);
+
+				Path destFile = null;
+				if (matcher.find()) {
+					destFile = Files.createTempFile("tmp", "-" + matcher.group(1));
+				} else {
+					destFile = Files.createTempFile("tmp", "-nonamefile.pdf");
+				}
+				FileUtils.copyInputStreamToFile(response.getBody().getInputStream(), destFile.toFile());
+				return destFile;
+			} catch (IOException ioException) {
+				log.error("falha", ioException);
+			}
+		}
+		throw new RuntimeException("Erro ao buscar arquivo na plataforma");
+	}
+
+	private Path responseToPath(MultipartFile response) {
+		try {
+			MultipartFile mf = response;
+			Path destFile = Files.createTempFile("tmp", "-" + mf.getName());
+			FileUtils.copyInputStreamToFile(mf.getInputStream(), destFile.toFile());
+			return destFile;
+		} catch (IOException ioException) {
+			log.error("falha", ioException);
+		}
+		throw new RuntimeException("Erro ao buscar arquivo na plataforma");
+	}
+
+	public Path getDocumentContentById(String documentId, @NonNull String notaryToken) {
+		ResponseEntity<Resource> response = uniproofNotaryClient.getDocumentContentById(documentId, null, notaryToken);
 		return responseToPath(response);
 	}
 
-	public Path getDocumentVersionContentById(String documentId, Integer version, String notaryToken) {
-		Response response = uniproofNotaryClient.getDocumentVersionContentById(documentId, version, notaryToken);
+	public Path getDocumentVersionContentById(String documentId, Integer version, @NonNull String notaryToken) {
+		ResponseEntity<Resource> response = uniproofNotaryClient.getDocumentContentById(documentId, version, notaryToken);
 		return responseToPath(response);
 	}
 
-	public Path getDocumentOriginalContentById(String documentId, String notaryToken) {
-		Response response = uniproofNotaryClient.getDocumentOriginalContentById(documentId, notaryToken);
+	public Path getDocumentOriginalContentById(String documentId, @NonNull String notaryToken) {
+		ResponseEntity<Resource> response = uniproofNotaryClient.getDocumentContentById(documentId, 1, notaryToken);
 		return responseToPath(response);
 	}
 
-	public Lot getLotById(String lotId, String notaryToken) {
-		return uniproofNotaryClient.getLotById(lotId, notaryToken);
+	public Lot getLotById(String lotId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getLotById(lotId, notaryToken).getBody();
 	}
 
-	public String getLotJsonById(String lotId, String notaryToken) {
-		return uniproofNotaryClient.getLotJsonById(lotId, notaryToken);
+	public String getLotJsonById(String lotId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getLotJsonById(lotId, notaryToken).getBody();
 	}
 
-	public Object getLotJsonObjectById(String lotId, String notaryToken) {
-		return uniproofNotaryClient.getLotJsonObjectById(lotId, notaryToken);
+	public Object getLotJsonObjectById(String lotId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getLotJsonObjectById(lotId, notaryToken).getBody();
 	}
 
-	public Object setLotJsonObjectById(String lotId, Object object,  String notaryToken) {
+	public Object setLotJsonObjectById(String lotId, Object object, @NonNull String notaryToken) {
 		return uniproofNotaryClient.setLotJsonObjectById(lotId, object, notaryToken);
 	}
 
 
-	public LotItem getLotItemById(String lotItemId, String companyToken) {
-		return uniproofNotaryClient.getLotItemById(lotItemId, companyToken);
+	public LotItem getLotItemById(String lotItemId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getLotItemById(lotItemId, notaryToken).getBody();
 	}
 
-	public List<LotItem> getLotItemBySha256(String sha256, String companyToken) {
-		return uniproofNotaryClient.getLotItemBySha256(sha256, companyToken);
+	public List<LotItem> getLotItemBySha256(String sha256, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getLotItemBySha256(sha256, notaryToken).getBody();
 	}
 
-	public List<Event> getLotItemEventsById(String lotItemId, String companyToken) {
-		return uniproofNotaryClient.getLotItemEventsById(lotItemId, companyToken);
+	public List<Event> getLotItemEventsById(String lotItemId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getLotItemEventsById(lotItemId, notaryToken).getBody();
 	}
 
-	public String setProtocolOnLotItemById(String lotId, String companyToken, String protocol) {
-		return uniproofNotaryClient.setProtocolOnLotItemById(lotId, companyToken, protocol);
+	public String setProtocolOnLotItemById(String lotId, @NonNull String notaryToken, String protocol) {
+		return uniproofNotaryClient.setProtocolOnLotItemById(lotId, notaryToken, protocol).getBody();
 	}
 
-	public LotItem uploadFileToLotItem(String lotItemId, String name, String notaryToken, Path file) {
+	public LotItem uploadFileToLotItem(String lotItemId, String name, @NonNull String notaryToken, Path file) {
 		LotItem result = null;
 
 		try {
@@ -155,12 +190,12 @@ public class UniproofApiNotaryService {
 		return result;
 	}
 
-	public DocumentRequest linkLocationToDocument(DocumentRequest documentRequest, String notaryToken) {
+	public DocumentRequest linkLocationToDocument(DocumentRequest documentRequest, @NonNull String notaryToken) {
 		return uniproofNotaryClient.linkLocationToDocument(documentRequest, notaryToken).getBody();
 	}
 
-	public Attachment updateAttachmentType(String lotItemId, Integer attachmentTypeId, String notaryToken) {
-		return uniproofNotaryClient.updateAttachmentType(
+	public Attachment updateAttachmentType(String lotItemId, Integer attachmentTypeId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.updateAttachmentTypeFromLotItem(
 				lotItemId,
 				AttachmentTypeRequest.builder()
 						.attachmentTypeId(attachmentTypeId)
@@ -169,7 +204,7 @@ public class UniproofApiNotaryService {
 		).getBody();
 	}
 
-	public LotItem uploadAttachmentToLotItem(String lotItemId, String name, Integer attachmentTypeId, String notaryToken, Path file) {
+	public LotItem uploadAttachmentToLotItem(String lotItemId, String name, Integer attachmentTypeId, String parentId, @NonNull String notaryToken, Path file) {
 		LotItem result = null;
 		if (file == null) {
 			return null;
@@ -184,7 +219,13 @@ public class UniproofApiNotaryService {
 							name,
 							Files.probeContentType(file),
 							is);
-					result = uniproofNotaryClient.uploadAttachmentToLotItem(lotItemId, mpfile, attachmentTypeId, uniproofApiConfig.getNotary()).getBody();
+					result = uniproofNotaryClient.uploadAttachmentToLotItem(
+									lotItemId,
+									mpfile,
+									attachmentTypeId,
+									parentId,
+									uniproofApiConfig.getNotary())
+							.getBody();
 				} catch (Exception ex) {
 					if (ex instanceof FeignException) {
 						FeignException feignException = (FeignException) ex;
@@ -205,25 +246,41 @@ public class UniproofApiNotaryService {
 		return result;
 	}
 
-	public LotItem uploadAttachmentParentToLotItem(
-			String lotItemId,
-			String name,
-			Path file,
-			Integer attachmentTypeId,
-			String parentId,
-			String companyToken
-	) {
+
+	public LotItem uploadAttachmentToOwner(String ownerType, String ownerId, String name, Integer attachmentTypeId, String parentId, @NonNull String notaryToken, Path file) {
 		LotItem result = null;
 		if (file == null) {
 			return null;
 		}
+
 		try (InputStream is = Files.newInputStream(file)) {
 			MultipartFile mpfile = new MockMultipartFile(
 					"file",
 					name,
 					Files.probeContentType(file),
 					is);
-			result = uniproofNotaryClient.uploadAttachmentParentToLotItem(lotItemId, mpfile, attachmentTypeId, parentId, companyToken).getBody();
+
+			Container container = uniproofNotaryClient.createOrGetContainer(
+					Container.builder()
+							.containerTypeId(1)
+							.ownerType("Company")
+							.ownerId(Long.valueOf(ownerId))
+							.name("Faturamento")
+							.description("Pasta de faturamento")
+							.parentId(parentId)
+							.build(),
+					uniproofApiConfig.getNotary()).getBody();
+
+			result = uniproofNotaryClient.uploadAttachmentToOwner(
+							mpfile,
+							attachmentTypeId,
+							container.getId(),
+							parentId,
+							ownerType,
+							ownerId,
+							notaryToken
+					)
+					.getBody();
 		} catch (Exception ex) {
 			if (ex instanceof FeignException) {
 				FeignException feignException = (FeignException) ex;
@@ -235,52 +292,46 @@ public class UniproofApiNotaryService {
 			} else {
 				log.error("Falha ao criar arquivo na plataforma: ", ex);
 			}
-			throw new RuntimeException("Falha ao anexar ao lotItem " + lotItemId, ex);
+			throw new RuntimeException("Falha ao anexar ao " + ownerType + ": " + ownerId, ex);
 		}
 		return result;
 	}
 
-	private ResponseEntity postNewEvent(Event evento, String companyToken) {
-		ResponseEntity result = uniproofNotaryClient.postNewEvent(evento, companyToken);
-		for (int i = 0; i < 5; i++) {
-			if (result.getStatusCodeValue() != 429) {
-				break;
-			}
-			result = uniproofNotaryClient.postNewEvent(evento, companyToken);
-		}
+	private ResponseEntity postNewEvent(Event evento, @NonNull String notaryToken) {
+		ResponseEntity result = uniproofNotaryClient.postNewEvent(evento, notaryToken);
 		return result;
 	}
 
-	public List<Price> getPriceById(String lotItemId, String notaryToken) {
-		return uniproofNotaryClient.getPriceById(lotItemId, notaryToken);
+	public List<Price> getPriceById(String lotItemId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getPriceById(lotItemId, notaryToken).getBody();
 	}
 
-	public Response setPriceById(String lotItemId, List<Price> prices, String notaryToken) {
-		return uniproofNotaryClient.setPriceById(lotItemId, prices, notaryToken);
+	public String setPriceById(String lotItemId, List<Price> prices, @NonNull String notaryToken) {
+		return uniproofNotaryClient.setPriceById(lotItemId, prices, notaryToken).getBody();
 	}
 
-	public Document getDocumentById(String documentId, String notaryToken) {
-		return uniproofNotaryClient.getDocumentById(documentId, notaryToken);
+	public Document getDocumentById(String documentId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getDocumentById(documentId, notaryToken).getBody();
 	}
 
-	public Storage getStorageByDocumentIdAndVersion(String documentId, Integer version, String notaryToken) {
-		return uniproofNotaryClient.getStorageByDocumentIdAndVersion(documentId, version, notaryToken);
+	public Storage getStorageByDocumentIdAndVersion(String documentId, Integer version, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getStorageByDocumentIdAndVersion(documentId, version, notaryToken).getBody();
 	}
 
-	public Company getOwner(String ownerType, String ownerId, String notaryToken) {
-		return uniproofNotaryClient.getOwner(ownerType, ownerId, notaryToken);
+	public Company getOwner(String ownerType, String ownerId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getOwner(ownerType, ownerId, notaryToken).getBody();
 	}
 
-	public User getUser(String userId, String notaryToken) {
-		return uniproofNotaryClient.getUser(userId, notaryToken);
+	public User getUser(String userId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getUser(userId, notaryToken).getBody();
 	}
 
-	public Company getCompany(String companyId, String notaryToken) {
-		return uniproofNotaryClient.getCompany(companyId, notaryToken);
+	public Company getCompany(String companyId, @NonNull String notaryToken) {
+		return uniproofNotaryClient.getCompany(companyId, notaryToken).getBody();
 	}
 
-	public Boolean addEvent(String uniproofNotaryToken, String lotItemId, String status, String msg, Boolean force) {
-		LotItem processo = getLotItemById(lotItemId, uniproofNotaryToken);
+	public Boolean addEvent(@NonNull String notaryToken, String lotItemId, String status, String msg, Boolean force) {
+		LotItem processo = getLotItemById(lotItemId, notaryToken);
 
 		if (force || !processo.getEvent().getStatus().equalsIgnoreCase(status)) {
 
@@ -291,7 +342,7 @@ public class UniproofApiNotaryService {
 					.description(msg)
 					.build();
 
-			ResponseEntity postexigencia2 = postNewEvent(event, uniproofNotaryToken);
+			ResponseEntity postexigencia2 = postNewEvent(event, notaryToken);
 			if (postexigencia2.getStatusCodeValue() >= 300) {
 				throw new RuntimeException("Erro movendo status " + status + " - lot_item_id: " + lotItemId + " motivo: " + postexigencia2.getBody());
 			}
@@ -300,7 +351,7 @@ public class UniproofApiNotaryService {
 		return false;
 	}
 
-	public void addLotEvent(String uniproofNotaryToken, String lotItemId, String status, String msg) {
+	public void addLotEvent(@NonNull String notaryToken, String lotItemId, String status, String msg) {
 
 		Event event = Event.builder()
 				.status(status)
@@ -309,7 +360,7 @@ public class UniproofApiNotaryService {
 				.description(msg)
 				.build();
 
-		ResponseEntity postexigencia2 = postNewEvent(event, uniproofNotaryToken);
+		ResponseEntity postexigencia2 = postNewEvent(event, notaryToken);
 
 	}
 
@@ -317,9 +368,9 @@ public class UniproofApiNotaryService {
 			String ownerType,
 			Long ownerId,
 			String moduleName,
-			String notaryToken
+			@NonNull String notaryToken
 	) {
-		return uniproofNotaryClient.getOptions(ownerType, ownerId, moduleName, notaryToken);
+		return uniproofNotaryClient.getOptions(ownerType, ownerId, moduleName, notaryToken).getBody();
 	}
 
 
@@ -327,50 +378,143 @@ public class UniproofApiNotaryService {
 			String containerId,
 			BigDecimal value,
 			String observation,
-			String notaryToken) {
+			@NonNull String notaryToken) {
 		WalletRequest walletRequest = WalletRequest.builder()
 				.containerId(containerId)
 				.credit(value)
 				.observation(observation)
 				.build();
-		return uniproofNotaryClient.createContainerWallet(walletRequest, notaryToken);
+		return uniproofNotaryClient.createContainerWallet(walletRequest, notaryToken).getBody();
 	}
 
 	public Wallet changeLimitWallet(
 			String lotItemId,
 			BigDecimal value,
 			String observation,
-			String notaryToken) {
+			@NonNull String notaryToken) {
 		WalletRequest walletRequest = WalletRequest.builder()
 				.lotItemId(lotItemId)
 				.credit(value)
 				.observation(observation)
 				.build();
-		;
-		return uniproofNotaryClient.changeLimitWallet(walletRequest, notaryToken);
+		return uniproofNotaryClient.changeLimitWallet(walletRequest, notaryToken).getBody();
 	}
 
 	public Wallet addBalanceLotItemWallet(
 			String lotItemId,
 			BigDecimal value,
 			String observation,
-			String notaryToken) {
+			@NonNull String notaryToken) {
 		WalletRequest walletRequest = WalletRequest.builder()
 				.lotItemId(lotItemId)
 				.balance(value)
 				.observation(observation)
 				.build();
-		return uniproofNotaryClient.addBalanceLotItemWallet(walletRequest, notaryToken);
+		return uniproofNotaryClient.addBalanceLotItemWallet(walletRequest, notaryToken).getBody();
+	}
+
+	public Wallet addBalanceCompanyWallet(
+			String companyToken,
+			BigDecimal value,
+			String observation,
+			@NonNull String notaryToken) {
+		Wallet wallet = uniproofNotaryClient.getBalanceWallet(companyToken, null, uniproofApiConfig.getNotary()).getBody();
+		WalletRequest walletRequest = WalletRequest.builder()
+				.ownerType(wallet.getOwnerType())
+				.ownerId(wallet.getOwnerId())
+				.balance(value)
+				.observation(observation)
+				.build();
+		return uniproofNotaryClient.addBalanceLotItemWallet(walletRequest, notaryToken).getBody();
+	}
+
+	public Wallet addBalanceContainerWallet(
+			String containerId,
+			BigDecimal value,
+			String observation,
+			@NonNull String notaryToken) {
+		WalletRequest walletRequest = WalletRequest.builder()
+				.containerId(containerId)
+				.balance(value)
+				.observation(observation)
+				.build();
+		return uniproofNotaryClient.addBalanceLotItemWallet(walletRequest, notaryToken).getBody();
 	}
 
 	public Wallet getBalanceWallet(
 			@NonNull String ownerType,
 			@NonNull String ownerId,
 			String containerId,
-			@NonNull String notaryToken
-	) {
-		return uniproofNotaryClient.getBalanceWallet(ownerType,ownerId,containerId,notaryToken);
+			@NonNull String notaryToken) {
+		return uniproofNotaryClient.getBalanceWallet(ownerType, ownerId, containerId, notaryToken).getBody();
+	}
+
+	public Wallet getBalanceWallet(
+			@NonNull String companyToken,
+			String containerId,
+			@NonNull String notaryToken) {
+		return uniproofNotaryClient.getBalanceWallet(companyToken, containerId, notaryToken).getBody();
+	}
+
+	public br.com.uniproof.integration.api.beans.Service getServiceById(
+			@NonNull Integer serviceId,
+			@NonNull String notaryToken) {
+		return uniproofNotaryClient.getServiceById(
+				serviceId,
+				notaryToken).getBody();
+	}
+
+	public List<br.com.uniproof.integration.api.beans.Service> getServicesByNotaryId(
+			Integer serviceIdId,
+			@NonNull String notaryToken) {
+		return uniproofNotaryClient.getServicesByNotaryId(
+				serviceIdId,
+				notaryToken
+		).getBody();
+	}
+
+	public LotItem forwardNewLotItem(
+			ForwardRequest forwardRequest,
+			@NonNull String notaryToken) {
+		return uniproofNotaryClient.forwardNewLotItem(
+				forwardRequest,
+				notaryToken
+		).getBody();
+	}
+
+	public Container getContainerById(
+			String containerId,
+			@NonNull String notaryToken) {
+		return uniproofNotaryClient.getContainerById(
+				containerId,
+				notaryToken
+		).getBody();
+	}
+
+	public Container createOrGetContainer(
+			Container container,
+			@NonNull String notaryToken) {
+		return uniproofNotaryClient.createOrGetContainer(
+				container,
+				notaryToken
+		).getBody();
+	}
+
+	public List<CartItem> sendCartItems(
+			CartConfirmRequest lotItemIds,
+			@NonNull String notaryToken) {
+		return uniproofNotaryClient.sendCartItems(
+				lotItemIds,
+				notaryToken).getBody();
 	}
 
 
+	public List<Attachment> getAttachmentFromLotItem(
+			String lotItemId,
+			@NonNull String notaryToken) {
+		return uniproofNotaryClient.getAttachmentFromLotItem(
+				lotItemId,
+				notaryToken
+		).getBody();
+	}
 }

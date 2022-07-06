@@ -9,8 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Data
-public class User {
-    private String id;
+public class User extends Owner {
+    private Long id;
     private String name;
     private String shortName;
     private String email;

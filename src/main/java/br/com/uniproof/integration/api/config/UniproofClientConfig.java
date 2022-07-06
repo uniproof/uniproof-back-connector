@@ -1,9 +1,7 @@
 package br.com.uniproof.integration.api.config;
 
 import br.com.uniproof.integration.api.service.UniproofApiCoreService;
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
+import com.jayway.jsonpath.JsonPath;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.Retryer;
@@ -16,7 +14,7 @@ import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.context.annotation.Bean;
 
-import java.text.ParseException;
+import java.util.Base64;
 import java.util.Date;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -64,19 +62,19 @@ public class UniproofClientConfig {
 		if (tokenExpiration.before(new Date())) {
 			token = uniproofCoreApiService.getToken(uniproofApiConfig.getLoginEmail(), uniproofApiConfig.getLoginPass());
 
-			try {
-				JWT jwt = JWTParser.parse(token);
-				//Header header = jwt.getHeader();
-				JWTClaimsSet jwtClaimSet = jwt.getJWTClaimsSet();
-				Date sync = new Date();
-				long iat = jwtClaimSet.getIssueTime().getTime();
-				long exp = jwtClaimSet.getExpirationTime().getTime();
-				long diff = sync.getTime() - iat;
+			Base64.Decoder decoder = Base64.getUrlDecoder();
+			String[] chunks = token.split("\\.");
 
-				tokenExpiration.setTime(exp - diff * 50);
+			String header = new String(decoder.decode(chunks[0]));
+			String payload = new String(decoder.decode(chunks[1]));
 
-			} catch (ParseException parseException) {
-			}
+			Date sync = new Date();
+			long iat = JsonPath.parse(payload).read("$.iat", Long.class)*1000;
+			long exp = JsonPath.parse(payload).read("$.exp", Long.class)*1000;
+			long diff = sync.getTime() - iat;
+
+			tokenExpiration.setTime(exp - diff * 50);
+
 		}
 		return token;
 	}

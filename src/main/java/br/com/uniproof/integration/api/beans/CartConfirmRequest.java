@@ -14,6 +14,10 @@ import java.util.List;
 @NoArgsConstructor
 public class CartConfirmRequest {
     @Builder.Default
+    private List<String> ownerId = new ArrayList<>();
+    @Builder.Default
+    private List<String> ownerType = new ArrayList<>();
+    @Builder.Default
     private List<String> lotItemIds = new ArrayList<>();
     @Builder.Default
     private List<String> lotIds = new ArrayList<>();

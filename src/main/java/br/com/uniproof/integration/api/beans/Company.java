@@ -13,8 +13,8 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Company {
-    private String id;
+public class Company extends Owner {
+    private Long id;
     private String token;
     private String kind;
     private String name;
