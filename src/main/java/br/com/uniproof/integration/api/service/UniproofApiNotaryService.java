@@ -11,23 +11,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -247,7 +243,15 @@ public class UniproofApiNotaryService {
 	}
 
 
-	public LotItem uploadAttachmentToOwner(String ownerType, String ownerId, String name, Integer attachmentTypeId, String parentId, @NonNull String notaryToken, Path file) {
+	public LotItem uploadAttachmentToOwner(
+			String ownerType,
+			String ownerId,
+			String name,
+			Integer attachmentTypeId,
+			String documentParentId,
+			String containerId,
+			@NonNull String notaryToken,
+			Path file) {
 		LotItem result = null;
 		if (file == null) {
 			return null;
@@ -260,24 +264,13 @@ public class UniproofApiNotaryService {
 					Files.probeContentType(file),
 					is);
 
-			Container container = uniproofNotaryClient.createOrGetContainer(
-					Container.builder()
-							.containerTypeId(1)
-							.ownerType("Company")
-							.ownerId(Long.valueOf(ownerId))
-							.name("Faturamento")
-							.description("Pasta de faturamento")
-							.parentId(parentId)
-							.build(),
-					uniproofApiConfig.getNotary()).getBody();
-
 			result = uniproofNotaryClient.uploadAttachmentToOwner(
 							mpfile,
 							attachmentTypeId,
-							container.getId(),
-							parentId,
-							ownerType,
+							containerId,
+							documentParentId,
 							ownerId,
+							ownerType,
 							notaryToken
 					)
 					.getBody();
@@ -293,6 +286,11 @@ public class UniproofApiNotaryService {
 				log.error("Falha ao criar arquivo na plataforma: ", ex);
 			}
 			throw new RuntimeException("Falha ao anexar ao " + ownerType + ": " + ownerId, ex);
+		} finally {
+			try {
+				Files.deleteIfExists(file);
+			} catch (IOException ignored) {
+			}
 		}
 		return result;
 	}
@@ -304,6 +302,15 @@ public class UniproofApiNotaryService {
 
 	public List<Price> getPriceById(String lotItemId, @NonNull String notaryToken) {
 		return uniproofNotaryClient.getPriceById(lotItemId, notaryToken).getBody();
+	}
+
+	public PriceSimulation getPriceSimulationById(
+			String lotItemId,
+			String notaryToken) {
+		return uniproofNotaryClient.getPriceSimulationById(
+				new ArrayList<>(),
+				lotItemId,
+				notaryToken).getBody();
 	}
 
 	public String setPriceById(String lotItemId, List<Price> prices, @NonNull String notaryToken) {

@@ -2,7 +2,6 @@ package br.com.uniproof.integration.api.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +42,7 @@ public class StringUtils {
 				"\"standard\": false," +
 				"\"cityId\": 3550308," +
 				"\"name\": \"Uniproof\"," +
-				//"\"fantasy\": null," +
+				//"\"fantasy\": \"Gigi\"," +
 				"\"phone\": null," +
 				"\"shortName\": \"Uniproof\"," +
 				"\"cnpj\": \"29.383.051/0001-21\"," +
@@ -121,14 +120,16 @@ public class StringUtils {
 				"}" +
 				"}";
 		String texto =
-				"${owner.fantasy:-${owner.name}} - Processo: ${lot.name:- }\n" +
-				"Carteira: LotItem_${id}\n" +
-				"Este documento pode ser pago antes ou depois da data de seu vencimento.Prefira Pix.\n" +
-				"O processo de REGISTRO SERÁ INICIADO QUANDO COMPENSADO, pelo banco.";
+				"${owner.fantasy:-${owner.name1}} - Processo: ${lot.name:- }\n" +
+						"Carteira: LotItem_${id}\n" +
+						"Este documento pode ser pago antes ou depois da data de seu vencimento. Prefira Pix.\n" +
+						"O processo de REGISTRO SERÁ INICIADO QUANDO COMPENSADO, pelo banco.";
 
 
 		System.out.println(replaceString(texto, json));
+		System.out.println(StringUtils.getNestedProperty("owner.name1.alias.juca", convertObjToMap(json)));
 	}
+
 	private static final Pattern lookupPattern = Pattern.compile("\\$\\{([^\\}]+)\\}");
 
 	public static String replaceString(String input, Object context) throws JsonProcessingException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
@@ -143,10 +144,10 @@ public class StringUtils {
 		return replaceString(input, map1);
 	}
 
-	public static Map<String,Object> convertObjToMap(Object object) throws JsonProcessingException {
+	public static Map<String, Object> convertObjToMap(Object object) throws JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		if (object instanceof String) {
-			return mapper.readValue((String)object, Map.class);
+			return mapper.readValue((String) object, Map.class);
 		} else {
 			return mapper.readValue(mapper.writeValueAsString(object), Map.class);
 		}
@@ -169,7 +170,7 @@ public class StringUtils {
 			String afterSearch = null;
 
 			try {
-				afterSearch = BeanUtils.getNestedProperty(context, xpath);
+				afterSearch = StringUtils.getNestedProperty(xpath, context);
 			} catch (Exception ignored) {
 			}
 
@@ -190,7 +191,22 @@ public class StringUtils {
 			if (sub.find()) {
 				return replaceString(resultado, context);
 			}
-			return result.toString().replaceAll("}","");
+			return result.toString().replaceAll("}", "");
 		}
+	}
+
+	public static String getNestedProperty(String prop, Object object) {
+		if (ObjectUtils.isEmpty(prop) || !(object instanceof Map)) {
+			return (object != null ? object.toString() : null);
+		}
+
+		Map<String, Object> map = (Map<String, Object>) object;
+		String firstPart = prop;
+		String secondPart = "";
+		if (prop.contains(".")) {
+			firstPart = prop.substring(0, prop.indexOf("."));
+			secondPart = prop.substring(prop.indexOf(".") + 1);
+		}
+		return getNestedProperty(secondPart, map.get(firstPart));
 	}
 }

@@ -45,10 +45,10 @@ public interface UniproofNotaryClient {
     ResponseEntity<LotItem> uploadAttachmentToOwner(
             @PathVariable(value = "file", required = true) MultipartFile file,
             @PathVariable(value = "attachmentTypeId", required = true) Integer attachmentTypeId,
-            @PathVariable(value = "containerId", required = true) String containerId,
-            @PathVariable(value = "parentId", required = true) String parentId,
-            @PathVariable(value = "ownerType", required = true) String ownerType,
+            @PathVariable(value = "containerId", required = false) String containerId,
+            @PathVariable(value = "parentId", required = false) String documentParentId,
             @PathVariable(value = "ownerId", required = true) String ownerId,
+            @PathVariable(value = "ownerType", required = true) String ownerType,
             @RequestHeader("X-Company-Token") String notaryToken
     );
     @PutMapping(value = "/notaries/attachments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -185,6 +185,13 @@ public interface UniproofNotaryClient {
     //Prices
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/prices/{id}")
     ResponseEntity<List<Price>> getPriceById(
+            @PathVariable("id") String lotItemId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @RequestMapping(method = RequestMethod.POST, value = "/notaries/prices/{id}/simulate")
+    ResponseEntity<PriceSimulation> getPriceSimulationById(
+            @RequestBody List<String> body,
             @PathVariable("id") String lotItemId,
             @RequestHeader("X-Company-Token") String notaryToken
     );
