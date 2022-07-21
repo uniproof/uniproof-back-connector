@@ -15,7 +15,8 @@ public class StringUtils {
 				"\"id\": \"914f5ac3-3194-46ae-94fa-ba2f2a41ddee\"," +
 				"\"lotId\": \"11987d8e-9a5c-48a6-b54d-e224b901b7b8\"," +
 				"\"parentId\": null," +
-				"\"protocol\": null," +
+				"\"protocol\":  null," +
+				"\"protocol1\":  \"CDTSP 20220721105984\"," +
 				"\"sellingPrice\": \"194.69\"," +
 				"\"notaryPrice\": \"135.29\"," +
 				"\"currentVersion\": 0," +
@@ -42,7 +43,7 @@ public class StringUtils {
 				"\"standard\": false," +
 				"\"cityId\": 3550308," +
 				"\"name\": \"Uniproof\"," +
-				//"\"fantasy\": \"Gigi\"," +
+				"\"fantasy\": \"Aureo Alto Astral\"," +
 				"\"phone\": null," +
 				"\"shortName\": \"Uniproof\"," +
 				"\"cnpj\": \"29.383.051/0001-21\"," +
@@ -98,7 +99,8 @@ public class StringUtils {
 				"\"lot\": {" +
 				"\"id\": \"11987d8e-9a5c-48a6-b54d-e224b901b7b8\"," +
 				"\"lastEventId\": null," +
-				"\"name\": \"Lote 25 de maio 16:36\"," +
+				"\"name\": null," +
+				"\"name1\": \"Lote 25 de maio 16:36\"," +
 				"\"description\": \"\"," +
 				"\"containerId\": null," +
 				"\"serviceId\": 62," +
@@ -120,8 +122,8 @@ public class StringUtils {
 				"}" +
 				"}";
 		String texto =
-				"${owner.fantasy:-${owner.name1}} - Processo: ${lot.name:- }\n" +
-						"Carteira: LotItem_${id}\n" +
+				"${owner.fantasy:-${owner.name}} - ${lot.name:-Avulso} - ${protocol:-Sem protocolo}\n" +
+						"LotItem: ${id}\n${wallet.ownerType}_${container.id:-${owner.token}}\n" +
 						"Este documento pode ser pago antes ou depois da data de seu vencimento. Prefira Pix.\n" +
 						"O processo de REGISTRO SERÁ INICIADO QUANDO COMPENSADO, pelo banco.";
 
@@ -132,12 +134,12 @@ public class StringUtils {
 
 	private static final Pattern lookupPattern = Pattern.compile("\\$\\{([^\\}]+)\\}");
 
-	public static String replaceString(String input, Object context) throws JsonProcessingException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+	public static String replaceString(String input, Object context) throws JsonProcessingException {
 		Map<String, Object> map = convertObjToMap(context);
 		return replaceString(input, map);
 	}
 
-	public static String replaceString(String input, Object context1, Object context2) throws JsonProcessingException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+	public static String replaceString(String input, Object context1, Object context2) throws JsonProcessingException {
 		Map<String, Object> map1 = convertObjToMap(context1);
 		Map<String, Object> map2 = convertObjToMap(context2);
 		map1.putAll(map2);
@@ -155,7 +157,7 @@ public class StringUtils {
 
 	public static String replaceString(String input, Map<String, Object> context) {
 		int position = 0;
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 
 		Matcher m = lookupPattern.matcher(input);
 		while (m.find()) {
