@@ -17,9 +17,6 @@ public class CpfCnpjValidator {
 	 * @return true se o CPF é válido e false se não é válido
 	 */
 	private static boolean isCpf(String cpf) {
-		if (ObjectUtils.isEmpty(cpf)) {
-			return false;
-		}
 		cpf = cpf.replace(".", "");
 		cpf = cpf.replace("-", "");
 
@@ -90,9 +87,6 @@ public class CpfCnpjValidator {
 	 * @return boolean
 	 */
 	private static boolean isCnpj(String cnpj) {
-		if (ObjectUtils.isEmpty(cnpj)) {
-			return false;
-		}
 		cnpj = cnpj.replace(".", "");
 		cnpj = cnpj.replace("-", "");
 		cnpj = cnpj.replace("/", "");
@@ -164,12 +158,11 @@ public class CpfCnpjValidator {
 		if (!ObjectUtils.isEmpty(text)) {
 			for (String part : text.split("[ |]")) {
 				String clean = part.replaceAll("\\D", "");
-				if (!ObjectUtils.isEmpty(clean) && CpfCnpjValidator.isValid(clean)) {
+				if (!ObjectUtils.isEmpty(clean) && CpfCnpjValidator.isValid(clean) && clean.length() > 10) {
 					return clean;
 				}
 			}
 		}
 		return null;
 	}
-
 }
