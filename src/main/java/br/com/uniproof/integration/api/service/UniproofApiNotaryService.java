@@ -14,6 +14,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -384,23 +385,21 @@ public class UniproofApiNotaryService {
 	public Wallet createContainerWallet(
 			String containerId,
 			BigDecimal value,
-			String observation,
 			@NonNull String notaryToken) {
-		WalletRequest walletRequest = WalletRequest.builder()
+		WalletCreateRequest walletCreateRequest = WalletCreateRequest.builder()
 				.containerId(containerId)
 				.credit(value)
-				.observation(observation)
 				.build();
-		return uniproofNotaryClient.createContainerWallet(walletRequest, notaryToken).getBody();
+		return uniproofNotaryClient.createContainerWallet(walletCreateRequest, notaryToken).getBody();
 	}
+
 
 	public Wallet changeLimitWallet(
 			String lotItemId,
 			BigDecimal value,
 			String observation,
 			@NonNull String notaryToken) {
-		WalletRequest walletRequest = WalletRequest.builder()
-				.lotItemId(lotItemId)
+		WalletLimitRequest walletRequest = WalletLimitRequest.builder()
 				.credit(value)
 				.observation(observation)
 				.build();
@@ -412,7 +411,7 @@ public class UniproofApiNotaryService {
 			BigDecimal value,
 			String observation,
 			@NonNull String notaryToken) {
-		WalletRequest walletRequest = WalletRequest.builder()
+		WalletBalanceRequest walletRequest = WalletBalanceRequest.builder()
 				.lotItemId(lotItemId)
 				.balance(value)
 				.observation(observation)
@@ -425,10 +424,8 @@ public class UniproofApiNotaryService {
 			BigDecimal value,
 			String observation,
 			@NonNull String notaryToken) {
-		Wallet wallet = uniproofNotaryClient.getBalanceWallet(companyToken, null, uniproofApiConfig.getNotary()).getBody();
-		WalletRequest walletRequest = WalletRequest.builder()
-				.ownerType(wallet.getOwnerType())
-				.ownerId(wallet.getOwnerId())
+		WalletBalanceRequest walletRequest = WalletBalanceRequest.builder()
+				.companyId(companyToken)
 				.balance(value)
 				.observation(observation)
 				.build();
@@ -440,7 +437,10 @@ public class UniproofApiNotaryService {
 			BigDecimal value,
 			String observation,
 			@NonNull String notaryToken) {
-		WalletRequest walletRequest = WalletRequest.builder()
+
+		Container container = uniproofNotaryClient.getContainerById(containerId, uniproofApiConfig.getNotary()).getBody();
+		Wallet wallet = getBalanceWallet(container.getOwnerType(), String.valueOf(container.getOwnerId()), null, container, uniproofApiConfig.getNotary());
+		WalletBalanceRequest walletRequest = WalletBalanceRequest.builder()
 				.containerId(containerId)
 				.balance(value)
 				.observation(observation)
@@ -449,18 +449,40 @@ public class UniproofApiNotaryService {
 	}
 
 	public Wallet getBalanceWallet(
-			@NonNull String ownerType,
-			@NonNull String ownerId,
-			String containerId,
+			String ownerType,
+			String ownerId,
+			String companyToken,
+			Container container,
 			@NonNull String notaryToken) {
-		return uniproofNotaryClient.getBalanceWallet(ownerType, ownerId, containerId, notaryToken).getBody();
-	}
 
-	public Wallet getBalanceWallet(
-			@NonNull String companyToken,
-			String containerId,
-			@NonNull String notaryToken) {
-		return uniproofNotaryClient.getBalanceWallet(companyToken, containerId, notaryToken).getBody();
+		Wallet baseWallet = null;
+		if (ObjectUtils.isEmpty(companyToken)) {
+			baseWallet = uniproofNotaryClient.getBalanceWallet(ownerType, ownerId, container.getId(), notaryToken).getBody();
+		} else {
+			baseWallet = uniproofNotaryClient.getBalanceWallet(
+							companyToken,
+							ObjectUtils.isEmpty(container) ? null : container.getId(),
+							notaryToken)
+					.getBody();
+		}
+		Wallet wallet = baseWallet;
+		/*
+		if (container != null
+				&& baseWallet.getOwnerType().equalsIgnoreCase("Company")
+				&& !ObjectUtils.isEmpty(container.getDescription())) {
+			String desc = container.getDescription().replaceAll("\\D", "");
+			/if (CpfCnpjValidator.isValid(desc)) {
+				wallet = uniproofNotaryClient.createContainerWallet(
+						WalletCreateRequest.builder()
+								.containerId(container.getId())
+								.credit(baseWallet.getCredit())
+								.build(),
+						uniproofApiConfig.getNotary()
+				).getBody();
+			}
+		}
+		 */
+		return wallet;
 	}
 
 	public br.com.uniproof.integration.api.beans.Service getServiceById(

@@ -2,10 +2,7 @@ package br.com.uniproof.integration.api.client;
 
 import br.com.uniproof.integration.api.beans.*;
 import br.com.uniproof.integration.api.config.UniproofClientConfig;
-import feign.Body;
 import feign.Headers;
-import feign.Param;
-import feign.Response;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -14,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.UUID;
 
 
 @FeignClient(name = "notaries", url = "${uniproof.api.restUrl}", configuration = UniproofClientConfig.class)
@@ -261,19 +257,19 @@ public interface UniproofNotaryClient {
 
     @RequestMapping(method = RequestMethod.POST, value = "/notaries/wallets")
     ResponseEntity<Wallet> createContainerWallet(
-            @RequestBody WalletRequest walletRequest,
+            @RequestBody WalletCreateRequest walletCreateRequest,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
     @RequestMapping(method = RequestMethod.POST, value = "/notaries/wallets/credit")
     ResponseEntity<Wallet> changeLimitWallet(
-            @RequestBody WalletRequest walletRequest,
+            @RequestBody WalletLimitRequest walletRequest,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
     @RequestMapping(method = RequestMethod.POST, value = "/notaries/wallets/balance")
     ResponseEntity<Wallet> addBalanceLotItemWallet(
-            @RequestBody WalletRequest walletRequest,
+            @RequestBody WalletBalanceRequest walletRequest,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 }

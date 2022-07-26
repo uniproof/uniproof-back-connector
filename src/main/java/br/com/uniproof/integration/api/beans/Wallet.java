@@ -8,21 +8,18 @@ import java.util.Date;
 
 @Data
 public class Wallet {
+    private Long id;
     private String ownerType;
     private String ownerId;
 
     private BigDecimal balance;
     private BigDecimal provisionedBalance;
-    private BigDecimal currentBalance;
     private BigDecimal credit;
 
     private Date createdAt;
     private Date updatedAt;
 
     public BigDecimal getCurrentBalance() {
-        if (currentBalance == null) {
-            currentBalance = balance.subtract(provisionedBalance);
-        }
-        return currentBalance;
+        return balance.subtract(provisionedBalance);
     }
 }
