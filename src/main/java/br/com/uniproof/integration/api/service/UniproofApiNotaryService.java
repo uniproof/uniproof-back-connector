@@ -339,6 +339,10 @@ public class UniproofApiNotaryService {
 	}
 
 	public Boolean addEvent(@NonNull String notaryToken, String lotItemId, String status, String msg, Boolean force) {
+		return addEvent(notaryToken, lotItemId, status, msg, force, false);
+	}
+
+	public Boolean addEvent(@NonNull String notaryToken, String lotItemId, String status, String msg, Boolean force, Boolean skipBalanceValidation) {
 		LotItem processo = getLotItemById(lotItemId, notaryToken);
 
 		if (force || !processo.getEvent().getStatus().equalsIgnoreCase(status)) {
@@ -348,6 +352,7 @@ public class UniproofApiNotaryService {
 					.ownerType("LotItem")
 					.lotItemId(lotItemId)
 					.description(msg)
+					.skipBalanceValidation(skipBalanceValidation)
 					.build();
 
 			ResponseEntity postexigencia2 = postNewEvent(event, notaryToken);

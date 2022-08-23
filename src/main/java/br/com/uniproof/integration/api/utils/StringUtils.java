@@ -5,12 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringUtils {
 	public static void main(String[] args) throws JsonProcessingException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+		String teste = "rTeste";
+		Map map = convertObjToMap(teste);
+
 		String json = "{" +
 				"\"id\": \"914f5ac3-3194-46ae-94fa-ba2f2a41ddee\"," +
 				"\"lotId\": \"11987d8e-9a5c-48a6-b54d-e224b901b7b8\"," +
@@ -149,7 +153,13 @@ public class StringUtils {
 	public static Map<String, Object> convertObjToMap(Object object) throws JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		if (object instanceof String) {
-			return mapper.readValue((String) object, Map.class);
+			try {
+				return mapper.readValue((String) object, Map.class);
+			} catch (Exception ex) {
+				Map string =new HashMap<>();
+				string.put("texto", object);
+				return string;
+			}
 		} else {
 			return mapper.readValue(mapper.writeValueAsString(object), Map.class);
 		}

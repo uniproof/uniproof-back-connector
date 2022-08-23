@@ -26,6 +26,9 @@ public class CpfCnpjValidator {
 			return false;
 		}
 
+		if (cpf.length() < 11) {
+			return false;
+		}
 		int d1, d2;
 		int digito1, digito2, resto;
 		int digitoCPF;
@@ -97,7 +100,7 @@ public class CpfCnpjValidator {
 			return false;
 		}
 
-		// considera-se erro CNPJ's formados por uma sequencia de numeros iguais
+		// considera-se erro CNPJ's formados por uma sequência de números iguais
 		if (cnpj.equals("00000000000000") || cnpj.equals("11111111111111")
 				|| cnpj.equals("22222222222222") || cnpj.equals("33333333333333")
 				|| cnpj.equals("44444444444444") || cnpj.equals("55555555555555")

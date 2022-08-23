@@ -23,6 +23,8 @@ public class Event {
     private Boolean manual;
     private String lotItemId;
     private BigDecimal value;
+
+    private Boolean skipBalanceValidation = Boolean.FALSE;
     private Date createdAt;
     private Date updatedAt;
 

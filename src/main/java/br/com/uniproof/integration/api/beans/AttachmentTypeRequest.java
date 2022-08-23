@@ -9,4 +9,8 @@ import lombok.Data;
 @Builder
 public class AttachmentTypeRequest {
 	private Integer attachmentTypeId;
+	private String attachmentId;
+	private String parentId;
+	private String lotItemId;
+
 }
