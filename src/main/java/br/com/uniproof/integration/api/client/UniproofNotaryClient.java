@@ -122,6 +122,20 @@ public interface UniproofNotaryClient {
 			@RequestHeader("X-Company-Token") String notaryToken
 	);
 
+	@RequestMapping(method = RequestMethod.POST, value = "/notaries/lots")
+	Lot createLot(
+			@RequestBody LotItemNotaryRequest lotItemNotaryRequest,
+			@RequestHeader("X-Company-Token") String notaryToken
+	);
+
+	@RequestMapping(method = RequestMethod.PUT, value = "/notaries/lots/{id}")
+	Lot updateLot(
+			@PathVariable("id") String lotId,
+			@RequestBody LotItemNotaryRequest lotItemNotaryRequest,
+			@RequestHeader("X-Company-Token") String notaryToken
+	);
+
+
 	@RequestMapping(method = RequestMethod.GET, value = "/notaries/lots/{id}/json_data")
 	ResponseEntity<String> getLotJsonById(
 			@PathVariable("id") String lotId,

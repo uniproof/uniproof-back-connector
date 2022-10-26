@@ -13,7 +13,6 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Event {
-
     private Long id;
     private Long userId;
     private String ownerType;
