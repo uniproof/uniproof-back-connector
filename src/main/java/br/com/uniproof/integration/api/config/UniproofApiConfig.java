@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class UniproofApiConfig {
 
+    @Value("${spring.profiles.active:Unknown}")
+    private String activeProfile;
+
     @Value("${uniproof.api.notary}")
     private String notary;
 
