@@ -17,6 +17,7 @@ public class Document {
     private Boolean signed;
     private Long totalSize;
     private Integer currentVersion;
+    private Date archivedAt;
     private Date createdAt;
     private Date updatedAt;
     private User creator;

@@ -1,6 +1,8 @@
 package br.com.uniproof.integration.api.service;
 
 import br.com.uniproof.integration.api.beans.*;
+import br.com.uniproof.integration.api.beans.options.ServicesAttachmentsOptions;
+import br.com.uniproof.integration.api.beans.options.ServicesAttachmentsRule;
 import br.com.uniproof.integration.api.client.UniproofLargeFilesNotaryClient;
 import br.com.uniproof.integration.api.client.UniproofNotaryClient;
 import br.com.uniproof.integration.api.config.UniproofApiConfig;
@@ -23,8 +25,7 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +41,32 @@ public class UniproofApiNotaryService {
 
     @Autowired
     private UniproofApiConfig uniproofApiConfig;
+
+
+    public List<ServicesAttachmentsOptions> findProcessServicesBehavior(
+            String ownerType,
+            Long ownerId,
+            String moduleName,
+            @NonNull String notaryToken
+    ) {
+        List<ServicesAttachmentsOptions> result = new ArrayList<>();
+        List<Option> optionList = getOptions(ownerType, ownerId, moduleName, notaryToken);
+        optionList.forEach(opt -> {
+            try {
+                ServicesAttachmentsOptions servicesAttachmentsOptions = opt.getValueAsObject(ServicesAttachmentsOptions.class);
+                Collections.sort(
+                        servicesAttachmentsOptions.getServicesAttachmentsRules(),
+                        Comparator.comparing(ServicesAttachmentsRule::getWeight));
+                Collections.reverse(servicesAttachmentsOptions.getServicesAttachmentsRules());
+                result.add(servicesAttachmentsOptions);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+
+        return result;
+    }
 
     public List<User> getRecipientsById(String ownerType, String ownerId, @NonNull String notaryToken) {
         return uniproofNotaryClient.getRecipientsById(ownerType, ownerId, notaryToken).getBody();
@@ -124,11 +151,11 @@ public class UniproofApiNotaryService {
         return uniproofNotaryClient.getLotById(lotId, notaryToken).getBody();
     }
 
-	public Lot createLot(LotItemNotaryRequest lotItemNotaryRequest, String notaryToken) {
+    public Lot createLot(LotItemNotaryRequest lotItemNotaryRequest, String notaryToken) {
         return uniproofNotaryClient.createLot(lotItemNotaryRequest, notaryToken);
     }
 
-	public Lot updateLot(String lotId, LotItemNotaryRequest lotItemNotaryRequest, String notaryToken) {
+    public Lot updateLot(String lotId, LotItemNotaryRequest lotItemNotaryRequest, String notaryToken) {
         return uniproofNotaryClient.updateLot(lotId, lotItemNotaryRequest, notaryToken);
     }
 
@@ -161,8 +188,8 @@ public class UniproofApiNotaryService {
         return uniproofNotaryClient.setProtocolOnLotItemById(lotId, notaryToken, protocol).getBody();
     }
 
-    public LotItem uploadFileToLotItem(String lotItemId, String name, @NonNull String notaryToken, Path file) {
-        LotItem result = null;
+    public Attachment uploadFileToLotItem(String lotItemId, String name, @NonNull String notaryToken, Path file) {
+        Attachment result = null;
 
         try {
             if (Files.size(file) > 40 * 1024 * 1024) {
@@ -209,8 +236,34 @@ public class UniproofApiNotaryService {
         ).getBody();
     }
 
-    public LotItem uploadAttachmentToLotItem(String lotItemId, String name, Integer attachmentTypeId, String parentId, @NonNull String notaryToken, Path file) {
-        LotItem result = null;
+    public List<Attachment> convertFlatAttachmentListToNestedList(List<Attachment> attachmentList) {
+        Map<String, Attachment> result = new HashMap<>();
+        Set<Attachment> resultList = new HashSet<>();
+        List<Attachment> pending = new LinkedList<>(attachmentList);
+        int i = 0;
+        while (!pending.isEmpty() && i < 10) {
+            i++;
+            for (Attachment att : attachmentList) {
+                if (ObjectUtils.isEmpty(att.getParentId())) {
+                    result.putIfAbsent(att.getDocument().getId(), att);
+                    resultList.add(att);
+                    pending.remove(att);
+                } else {
+                    if (!ObjectUtils.isEmpty(result.get(att.getParentId()))) {
+                        Attachment parent = result.get(att.getParentId());
+                        result.putIfAbsent(att.getDocument().getId(), att);
+                        parent.getChildren().add(att);
+                        att.setParent(parent);
+                        pending.remove(att);
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(resultList);
+    }
+
+    public Attachment uploadAttachmentToLotItem(String lotItemId, String name, Integer attachmentTypeId, String parentId, @NonNull String notaryToken, Path file) {
+        Attachment result = null;
         if (file == null) {
             return null;
         }
@@ -252,7 +305,7 @@ public class UniproofApiNotaryService {
     }
 
 
-    public LotItem uploadAttachmentToOwner(
+    public Attachment uploadAttachmentToOwner(
             String ownerType,
             String ownerId,
             String name,
@@ -261,7 +314,7 @@ public class UniproofApiNotaryService {
             String containerId,
             @NonNull String notaryToken,
             Path file) {
-        LotItem result = null;
+        Attachment result = null;
         if (file == null) {
             return null;
         }

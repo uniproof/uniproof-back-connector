@@ -1,5 +1,6 @@
 package br.com.uniproof.integration.api.client;
 
+import br.com.uniproof.integration.api.beans.Attachment;
 import br.com.uniproof.integration.api.beans.LotItem;
 import br.com.uniproof.integration.api.config.UniproofApiConfig;
 import br.com.uniproof.integration.api.service.UniproofApiCoreService;
@@ -32,8 +33,8 @@ public class UniproofLargeFilesNotaryClient {
     @Autowired
     private UniproofApiConfig uniproofApiConfig;
 
-    public LotItem uploadFileToLotItem(String lotItemId, String name, Integer attachmentId, String notaryToken, Path file) {
-        LotItem result = null;
+    public Attachment uploadFileToLotItem(String lotItemId, String name, Integer attachmentId, String notaryToken, Path file) {
+        Attachment result = null;
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -59,8 +60,8 @@ public class UniproofLargeFilesNotaryClient {
 
             String serverUrl = uniproofApiConfig.getRestUrl() + "/notaries/lot_items/" + lotItemId + "/attachments";
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<LotItem> response = restTemplate
-                    .postForEntity(serverUrl, requestEntity, LotItem.class);
+            ResponseEntity<Attachment> response = restTemplate
+                    .postForEntity(serverUrl, requestEntity, Attachment.class);
             Files.deleteIfExists(novoNome);
             return response.getBody();
 
