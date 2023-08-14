@@ -188,38 +188,9 @@ public class UniproofApiNotaryService {
         return uniproofNotaryClient.setProtocolOnLotItemById(lotId, notaryToken, protocol).getBody();
     }
 
-    public Attachment uploadFileToLotItem(String lotItemId, String name, @NonNull String notaryToken, Path file) {
-        Attachment result = null;
-
-        try {
-            if (Files.size(file) > 40 * 1024 * 1024) {
-                result = uniproofLargeFilesNotaryClient.uploadFileToLotItem(lotItemId, name, 4, notaryToken, file);
-            } else {
-                try (InputStream is = Files.newInputStream(file)) {
-                    MultipartFile mpfile = new MockMultipartFile(
-                            "file",
-                            name,
-                            Files.probeContentType(file),
-                            is);
-                    result = uniproofNotaryClient.uploadFileToLotItem(lotItemId, mpfile, uniproofApiConfig.getNotary()).getBody();
-                } catch (Exception ex) {
-                    if (ex instanceof FeignException) {
-                        FeignException feignException = (FeignException) ex;
-                        if (feignException.responseBody().isPresent()) {
-                            Charset charset = Charset.defaultCharset();
-                            String response = charset.decode(feignException.responseBody().get()).toString();
-                            log.error("Falha ao criar arquivo na plataforma: " + response);
-                        }
-                    } else {
-                        log.error("Falha ao criar arquivo na plataforma: ", ex);
-                    }
-                    throw new RuntimeException("Falha ao anexar ao lotItem " + lotItemId, ex);
-                }
-            }
-        } catch (Exception ex) {
-            log.error("Falha ao criar arquivo na plataforma: ", ex);
-        }
-        return result;
+    public Attachment uploadRegisteredFileToLotItem(String lotItemId, String name, @NonNull String notaryToken, Path file) {
+        Integer registered_document_att_type = 5;
+        return uploadAttachmentToLotItem(lotItemId, name, registered_document_att_type, null, notaryToken, file);
     }
 
     public DocumentRequest linkLocationToDocument(DocumentRequest documentRequest, @NonNull String notaryToken) {

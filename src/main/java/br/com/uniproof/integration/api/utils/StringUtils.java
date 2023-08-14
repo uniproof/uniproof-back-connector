@@ -1,6 +1,7 @@
 package br.com.uniproof.integration.api.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.ObjectUtils;
 
@@ -151,7 +152,8 @@ public class StringUtils {
 	}
 
 	public static Map<String, Object> convertObjToMap(Object object) throws JsonProcessingException {
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = new ObjectMapper()
+				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		if (object instanceof String) {
 			try {
 				return mapper.readValue((String) object, Map.class);
