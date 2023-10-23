@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -347,6 +348,7 @@ public class UniproofApiNotaryService {
     }
 
     public String setPriceById(String lotItemId, List<Price> prices, @NonNull String notaryToken) {
+        prices = prices.stream().filter(x -> x.getValue() != null).collect(Collectors.toList());
         return uniproofNotaryClient.setPriceById(lotItemId, prices, notaryToken).getBody();
     }
 
@@ -574,7 +576,6 @@ public class UniproofApiNotaryService {
                 notaryToken).getBody();
     }
 
-
     public List<Attachment> getAttachmentFromLotItem(
             String lotItemId,
             @NonNull String notaryToken) {
@@ -583,4 +584,5 @@ public class UniproofApiNotaryService {
                 notaryToken
         ).getBody();
     }
+
 }

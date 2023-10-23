@@ -1,0 +1,26 @@
+# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
+# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
+
+name: Dependabot
+on:
+  workflow_dispatch:
+    branches-ignore:
+      - 'dependabot/**'
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'microsoft'
+          cache: maven
+      - name: Submit Dependency Snapshot
+        uses: advanced-security/maven-dependency-submission-action@v3.0.2
+        with:
+          ignore-maven-wrapper: true

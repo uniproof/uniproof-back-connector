@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.6.9</version>
+        <version>3.1.4</version>
     </parent>
     <groupId>br.com.uniproof.service</groupId>
     <artifactId>uniproof-back-connector</artifactId>
@@ -29,7 +29,7 @@
         <java.version>11</java.version>
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
         <maven.scm.provider.gitexe.version>1.9.5</maven.scm.provider.gitexe.version>
-        <spring-cloud.version>2021.0.3</spring-cloud.version>
+        <spring-cloud.version>2022.0.4</spring-cloud.version>
     </properties>
     <dependencies>
 
@@ -51,7 +51,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.24</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
