@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 
 @Data
 public class Option {
@@ -17,7 +18,8 @@ public class Option {
     private String ownerId;
     private String name;
 
-    private String value;
+    private Map<String, Object> value;
+    private String legacyValue;
     private String kind;
     private String moduleName;
     private Integer weight;
@@ -26,9 +28,10 @@ public class Option {
 
     @JsonIgnore
     public <T> T getValueAsObject(Class<T> classe) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
-        return mapper.readValue(value, classe);
+        return mapper.readValue(legacyValue, classe);
     }
 
 }

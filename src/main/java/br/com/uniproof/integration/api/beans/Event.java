@@ -13,7 +13,6 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Event {
-
     private Long id;
     private Long userId;
     private String ownerType;
@@ -21,9 +20,11 @@ public class Event {
     private String status;
     private String description;
     private Boolean manual;
+    private Long previousStatusId;
+    private Long previousEventId;
     private String lotItemId;
     private BigDecimal value;
-
+    @Builder.Default
     private Boolean skipBalanceValidation = Boolean.FALSE;
     private Date createdAt;
     private Date updatedAt;

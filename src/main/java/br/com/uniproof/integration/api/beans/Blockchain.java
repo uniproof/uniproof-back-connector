@@ -14,6 +14,7 @@ public class Blockchain {
     private String id;
     //@JsonProperty(value = "lot_item_id")
     private String lotItemId;
+    private String attachmentId;
     private String doublesha256;
     @JsonInclude
     private String protocol;

@@ -5,9 +5,13 @@ import br.com.uniproof.integration.api.client.UniproofUserClient;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
@@ -267,6 +271,14 @@ public class UniproofApiUserService {
 		return uniproofApiClient.listAttachmentType(
 				companyToken);
 	}
+
+	 public LotItem priceSimulate(
+			LotItemSimulateRequest lotItemRequest,
+			String companyToken
+	) {
+		 return uniproofApiClient.priceSimulate(lotItemRequest, companyToken);
+	 }
+
 
 	public List<EventType> listEventType(
 			String companyToken) {

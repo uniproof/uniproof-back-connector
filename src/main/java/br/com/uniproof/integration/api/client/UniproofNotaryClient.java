@@ -16,14 +16,14 @@ import java.util.List;
 @FeignClient(name = "notaries", url = "${uniproof.api.restUrl}", configuration = UniproofClientConfig.class)
 public interface UniproofNotaryClient {
 	//Attachments
-	@PostMapping(value = "/notaries/lot_items/{id}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/notaries/lot_items/{id}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<List<Attachment>> getAttachmentFromLotItem(
 			@PathVariable("id") String lotItemId,
 			@RequestHeader("X-Company-Token") String notaryToken
 	);
 
 	@PostMapping(value = "/notaries/lot_items/{id}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<LotItem> uploadAttachmentToLotItem(
+	ResponseEntity<Attachment> uploadAttachmentToLotItem(
 			@PathVariable("id") String lotItemId,
 			@PathVariable(value = "file", required = true) MultipartFile file,
 			@PathVariable(value = "attachmentTypeId", required = true) Integer attachmentTypeId,
@@ -32,7 +32,7 @@ public interface UniproofNotaryClient {
 	);
 
 	@DeleteMapping(value = "/notaries/lot_items/{id}/attachments/{attId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<LotItem> deleteAttachmentFromLotItem(
+	ResponseEntity<Attachment> deleteAttachmentFromLotItem(
 			@PathVariable("id") String lotItemId,
 			@PathVariable("attId") String attachmentId,
 			@RequestHeader("X-Company-Token") String notaryToken
@@ -45,7 +45,7 @@ public interface UniproofNotaryClient {
 
 
 	@PostMapping(value = "/notaries/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<LotItem> uploadAttachmentToOwner(
+	ResponseEntity<Attachment> uploadAttachmentToOwner(
 			@PathVariable(value = "file", required = true) MultipartFile file,
 			@PathVariable(value = "attachmentTypeId", required = true) Integer attachmentTypeId,
 			@PathVariable(value = "containerId", required = false) String containerId,
@@ -122,6 +122,20 @@ public interface UniproofNotaryClient {
 			@RequestHeader("X-Company-Token") String notaryToken
 	);
 
+	@RequestMapping(method = RequestMethod.POST, value = "/notaries/lots")
+	Lot createLot(
+			@RequestBody LotItemNotaryRequest lotItemNotaryRequest,
+			@RequestHeader("X-Company-Token") String notaryToken
+	);
+
+	@RequestMapping(method = RequestMethod.PUT, value = "/notaries/lots/{id}")
+	Lot updateLot(
+			@PathVariable("id") String lotId,
+			@RequestBody LotItemNotaryRequest lotItemNotaryRequest,
+			@RequestHeader("X-Company-Token") String notaryToken
+	);
+
+
 	@RequestMapping(method = RequestMethod.GET, value = "/notaries/lots/{id}/json_data")
 	ResponseEntity<String> getLotJsonById(
 			@PathVariable("id") String lotId,
@@ -164,7 +178,7 @@ public interface UniproofNotaryClient {
 
 
 	@PostMapping(value = "/notaries/lot_items/{id}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<LotItem> uploadFileToLotItem(
+	ResponseEntity<Attachment> uploadFileToLotItem(
 			@PathVariable("id") String lotItemId,
 			@RequestPart(value = "file", required = true) MultipartFile file,
 			@RequestHeader("X-Company-Token") String notaryToken

@@ -130,7 +130,6 @@ public interface UniproofUserClient {
             @RequestHeader("X-Company-Token") String companyToken);
 
 
-
     @RequestMapping(method = RequestMethod.GET, value = "/api/documents/{documentId}/download")
     MultipartFile[] getDocument(
             @PathVariable("documentId") String documentId,
@@ -149,7 +148,6 @@ public interface UniproofUserClient {
             @RequestHeader("X-Company-Token") String companyToken);
 
 
-
     @PostMapping(value = "/api/lotItem/{lotItemId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<LotItem> uploadAttachmentToLotItem(
             @PathVariable("lotItemId") String lotId,
@@ -161,6 +159,14 @@ public interface UniproofUserClient {
     @RequestMapping(method = RequestMethod.GET, value = "/api/attachment_types")
     List<AttachmentType> listAttachmentType(
             @RequestHeader("X-Company-Token") String companyToken);
+
+
+    @PostMapping(value = "/api/prices/simulate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    LotItem priceSimulate(
+            @RequestBody LotItemSimulateRequest lotItemRequest,
+            @RequestHeader("X-Company-Token") String companyToken
+    );
+
 
     @RequestMapping(method = RequestMethod.GET, value = "/api/event_types")
     List<EventType> listEventType(

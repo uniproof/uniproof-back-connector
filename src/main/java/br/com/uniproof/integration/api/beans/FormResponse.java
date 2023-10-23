@@ -15,7 +15,8 @@ public class FormResponse {
 
     @JsonIgnore
     public <T> T getDataAsObject(Class<T> formClass) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
         return mapper.readValue(this.data, formClass);
     }

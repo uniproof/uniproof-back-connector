@@ -14,4 +14,7 @@ public class AttachmentType {
     private Boolean visible;
     private Boolean forwardable;
     private Boolean registered;
+    private String icon;
+    private String color;
+    private Integer expirationDays;
 }
