@@ -216,7 +216,7 @@ public class UniproofApiNotaryService {
         while (!pending.isEmpty() && i < 10) {
             i++;
             for (Attachment att : attachmentList) {
-                if (ObjectUtils.isEmpty(att.getParentId())) {
+                if (ObjectUtils.isEmpty(att.getParentId()) && att.getRemovedAt() == null) {
                     result.putIfAbsent(att.getDocument().getId(), att);
                     resultList.add(att);
                     pending.remove(att);

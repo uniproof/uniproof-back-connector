@@ -27,7 +27,9 @@ public class LotItem {
     private Date startedAt;
     private BigDecimal sellingPrice;
     private BigDecimal notaryPrice;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private Date createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private Date updatedAt;
     private Document document;
     private List<Price> composition;
@@ -39,5 +41,7 @@ public class LotItem {
     private Lot lot;
     private Container container;
     private Blockchain blockchain;
+    private Boolean hasNotification;
+    private String parentId;
 
 }

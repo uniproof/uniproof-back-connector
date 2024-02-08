@@ -163,6 +163,12 @@ public interface UniproofNotaryClient {
 			@PathVariable("id") String lotId,
 			@RequestHeader("X-Company-Token") String notaryToken
 	);
+	@RequestMapping(method = RequestMethod.GET, value = "/notaries/lot_items/{id}")
+	ResponseEntity<LotItem> getLotItemById(
+			@PathVariable("id") String lotId,
+			@RequestHeader("X-Company-Token") String notaryToken,
+			@RequestParam(value = "nestedAttachments", defaultValue = "true", required = false) Boolean nestedAttachments
+	);
 
 	@RequestMapping(method = RequestMethod.GET, value = "/notaries/lot_items/sha256/{sha256}")
 	ResponseEntity<List<LotItem>> getLotItemBySha256(

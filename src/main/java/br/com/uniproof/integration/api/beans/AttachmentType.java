@@ -10,6 +10,7 @@ public class AttachmentType {
     private String name;
     private String label;
     private String notaryLabel;
+    private Boolean deletable;
     private Boolean standard;
     private Boolean visible;
     private Boolean forwardable;
