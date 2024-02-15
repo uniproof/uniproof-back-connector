@@ -23,9 +23,21 @@
                     </snapshots>
                 </repository>
                 <repository>
-                    <id>github</id>
+                    <id>github-uniproof-back-connector</id>
                     <name>GitHub UNIPROOF Apache Maven Packages</name>
                     <url>https://maven.pkg.github.com/uniproof/uniproof-back-connector</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>github-uniproof-java-service</id>
+                    <name>GitHub UNIPROOF Apache Maven Packages</name>
+                    <url>https://maven.pkg.github.com/uniproof/uniproof-java-service</url>
                     <releases>
                         <enabled>true</enabled>
                     </releases>
@@ -40,9 +52,14 @@
 
     <servers>
         <server>
-            <id>github</id>
+            <id>github-uniproof-back-connector</id>
             <username>napalmsp</username>
-            <password>1306b2cb6e85c13a0e6bfe3bdbbd2e3cf4489565</password>
+            <password>b94964d140e562b3e39edd55ad095fab989b522c</password>
+        </server>
+        <server>
+            <id>github-uniproof-java-service</id>
+            <username>napalmsp</username>
+            <password>b94964d140e562b3e39edd55ad095fab989b522c</password>
         </server>
     </servers>
 </settings>
