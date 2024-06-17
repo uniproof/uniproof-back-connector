@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 //@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
@@ -28,6 +29,7 @@ public class Company extends Owner {
     private Date startContractTerm;
     private Date endContractTerm;
     private String comments;
+    private Set<Long> notaryIds;
 
     private Map<String, String> properties = new HashMap<>();
 
