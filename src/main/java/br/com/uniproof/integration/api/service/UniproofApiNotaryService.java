@@ -329,6 +329,40 @@ public class UniproofApiNotaryService {
         return result;
     }
 
+    public Attachment importAttachmentsFromParent(
+            String lotItemId,
+            String attachmentId,
+            Integer attachmentTypeId,
+            String parentId,
+            @NonNull String notaryToken) {
+        Attachment result = null;
+        try {
+            result = uniproofNotaryClient.importAttachmentsFromParent(
+                    AttachmentTypeRequest.builder()
+                            .attachmentId(attachmentId)
+                            .attachmentTypeId(attachmentTypeId)
+                            .parentId(parentId)
+                            .lotItemId(lotItemId)
+                            .build()
+                            , notaryToken)
+                    .getBody();
+        } catch (Exception ex) {
+            if (ex instanceof FeignException) {
+                FeignException feignException = (FeignException) ex;
+                if (feignException.responseBody().isPresent()) {
+                    Charset charset = Charset.defaultCharset();
+                    String response = charset.decode(feignException.responseBody().get()).toString();
+                    log.error("Falha ao criar arquivo na plataforma: " + response);
+                }
+            } else {
+                log.error("Falha ao criar arquivo na plataforma: ", ex);
+            }
+            throw new RuntimeException("Falha ao anexar ao " + lotItemId + ": " + attachmentId, ex);
+        }
+        return result;
+    }
+
+
     private ResponseEntity postNewEvent(Event evento, @NonNull String notaryToken) {
         ResponseEntity result = uniproofNotaryClient.postNewEvent(evento, notaryToken);
         return result;
