@@ -28,6 +28,8 @@ public class Event {
     private Boolean skipBalanceValidation = Boolean.FALSE;
     private Date createdAt;
     private Date updatedAt;
+    private Date archivedAt;
+    private Long archiverId;
 
     Event(Long id) {
         this.id = id;

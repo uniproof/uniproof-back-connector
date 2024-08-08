@@ -1,8 +1,7 @@
 package br.com.uniproof.integration.api.beans;
 
 import lombok.Data;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
+
 
 import java.beans.Transient;
 import java.util.regex.Matcher;
@@ -16,6 +15,8 @@ public class User extends Owner {
     private String email;
     private String cpf;
     private String kind;
+    private String login;
+    private String origin;
 
     @Transient
     public static String formatCPF(String cpf) {
@@ -27,7 +28,7 @@ public class User extends Owner {
 
     @Transient
     public String getFormatedCpf() {
-        if (ObjectUtils.isEmpty(cpf)) {
+        if (cpf == null) {
             return null;
         }
         return formatCPF(cpf);
