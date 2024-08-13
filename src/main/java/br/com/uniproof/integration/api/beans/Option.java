@@ -19,7 +19,7 @@ public class Option {
     private String name;
 
     private Map<String, Object> value;
-    private String legacyValue;
+    //private String legacyValue;
     private String kind;
     private String moduleName;
     private Integer weight;
@@ -31,6 +31,7 @@ public class Option {
         ObjectMapper mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+        String legacyValue = mapper.writeValueAsString(value);
         return mapper.readValue(legacyValue, classe);
     }
 
