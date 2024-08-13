@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
-@FeignClient(name = "signature", url = "${uniproof.api.lacunaUrl}", configuration = UniproofClientConfig.class)
+@FeignClient(name = "signature", url = "${uniproof.api.lacunaUrl:localhost}", configuration = UniproofClientConfig.class)
 public interface UniproofSignatureClient {
 
 

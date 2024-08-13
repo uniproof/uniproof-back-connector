@@ -29,7 +29,7 @@ public class Company extends Owner {
     private Date startContractTerm;
     private Date endContractTerm;
     private String comments;
-    private Set<Long> notaryIds;
+    //private Set<Long> notaryIds;
 
     private Map<String, String> properties = new HashMap<>();
 
