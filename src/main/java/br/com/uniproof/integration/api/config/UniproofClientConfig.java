@@ -22,60 +22,60 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @Slf4j
 public class UniproofClientConfig {
 
-	@Autowired
-	private UniproofApiConfig uniproofApiConfig;
+    @Autowired
+    private UniproofApiConfig uniproofApiConfig;
 
-	@Autowired
-	private UniproofApiCoreService uniproofCoreApiService;
+    @Autowired
+    private UniproofApiCoreService uniproofCoreApiService;
 
-	private String token = "";
+    private String token = "";
 
-	private Date tokenExpiration = new Date();
+    private Date tokenExpiration = new Date();
 
 
-	@Autowired
-	private ObjectFactory<HttpMessageConverters> messageConverters;
+    @Autowired
+    private ObjectFactory<HttpMessageConverters> messageConverters;
 
-	@Bean
-	Logger.Level feignLoggerLevelBackConnector() {
-		return Logger.Level.BASIC;
-	}
+    @Bean
+    Logger.Level feignLoggerLevelBackConnector() {
+        return Logger.Level.BASIC;
+    }
 
-	@Bean
-	public Retryer retryerBackConnector() {
-		return new Retryer.Default(100, SECONDS.toMillis(10), 10);
-	}
+    @Bean
+    public Retryer retryerBackConnector() {
+        return new Retryer.Default(100, SECONDS.toMillis(10), 10);
+    }
 
-	@Bean
-	public Encoder feignFormEncoderBackConnector() {
-		return new SpringFormEncoder(new SpringEncoder(messageConverters));
-	}
+    @Bean
+    public Encoder feignFormEncoderBackConnector() {
+        return new SpringFormEncoder(new SpringEncoder(messageConverters));
+    }
 
-	@Bean
-	public RequestInterceptor requestInterceptorBackConnector() {
-		return requestTemplate -> {
-			requestTemplate.header("Authorization", "Bearer " + getToken());
-		};
-	}
+    @Bean
+    public RequestInterceptor requestInterceptorBackConnector() {
+        return requestTemplate -> {
+            requestTemplate.header("Authorization", "Bearer " + getToken());
+        };
+    }
 
-	public String getToken() {
-		if (tokenExpiration.before(new Date())) {
-			token = uniproofCoreApiService.getToken(uniproofApiConfig.getLoginEmail(), uniproofApiConfig.getLoginPass());
+    public String getToken() {
+        if (tokenExpiration.before(new Date())) {
+            token = uniproofCoreApiService.getToken(uniproofApiConfig.getLoginEmail(), uniproofApiConfig.getLoginPass());
 
-			Base64.Decoder decoder = Base64.getUrlDecoder();
-			String[] chunks = token.split("\\.");
+            Base64.Decoder decoder = Base64.getUrlDecoder();
+            String[] chunks = token.split("\\.");
 
-			String header = new String(decoder.decode(chunks[0]));
-			String payload = new String(decoder.decode(chunks[1]));
+            String header = new String(decoder.decode(chunks[0]));
+            String payload = new String(decoder.decode(chunks[1]));
 
-			Date sync = new Date();
-			long iat = JsonPath.parse(payload).read("$.iat", Long.class)*1000;
-			long exp = JsonPath.parse(payload).read("$.exp", Long.class)*1000;
-			long diff = sync.getTime() - iat;
+            Date sync = new Date();
+            long iat = JsonPath.parse(payload).read("$.iat", Long.class) * 1000;
+            long exp = JsonPath.parse(payload).read("$.exp", Long.class) * 1000;
+            long diff = sync.getTime() - iat;
 
-			tokenExpiration.setTime(exp - diff * 50);
+            tokenExpiration.setTime(exp - diff * 50);
 
-		}
-		return token;
-	}
+        }
+        return token;
+    }
 }

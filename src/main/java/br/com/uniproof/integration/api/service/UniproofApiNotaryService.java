@@ -338,12 +338,12 @@ public class UniproofApiNotaryService {
         Attachment result = null;
         try {
             result = uniproofNotaryClient.importAttachmentsFromParent(
-                    AttachmentTypeRequest.builder()
-                            .attachmentId(attachmentId)
-                            .attachmentTypeId(attachmentTypeId)
-                            .parentId(parentId)
-                            .lotItemId(lotItemId)
-                            .build()
+                            AttachmentTypeRequest.builder()
+                                    .attachmentId(attachmentId)
+                                    .attachmentTypeId(attachmentTypeId)
+                                    .parentId(parentId)
+                                    .lotItemId(lotItemId)
+                                    .build()
                             , notaryToken)
                     .getBody();
         } catch (Exception ex) {
