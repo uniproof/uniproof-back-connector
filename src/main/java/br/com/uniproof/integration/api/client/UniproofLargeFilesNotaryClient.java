@@ -1,7 +1,6 @@
 package br.com.uniproof.integration.api.client;
 
 import br.com.uniproof.integration.api.beans.Attachment;
-import br.com.uniproof.integration.api.beans.LotItem;
 import br.com.uniproof.integration.api.config.UniproofApiConfig;
 import br.com.uniproof.integration.api.service.UniproofApiCoreService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,7 +44,7 @@ public class UniproofLargeFilesNotaryClient {
             Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
             name = pattern.matcher(nfdNormalizedString).replaceAll("");
             name = name.replaceAll("[^a-zA-Z0-9\\._]+", "_");
-            Path novoNome = Paths.get(file.toFile().getParent() +"/" +  name);
+            Path novoNome = Paths.get(file.toFile().getParent() + "/" + name);
             Files.deleteIfExists(novoNome);
             Files.move(file, novoNome);
             FileSystemResource fileSystemResource = new FileSystemResource(novoNome.toFile());

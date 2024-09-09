@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ForwardRequest {
-	private String lotItemId;
-	private Long serviceId;
+    private String lotItemId;
+    private Long serviceId;
 }

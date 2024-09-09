@@ -7,7 +7,6 @@ import lombok.Data;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 @Data
 public class ServicesAttachmentsRule {
@@ -20,7 +19,7 @@ public class ServicesAttachmentsRule {
     private List<Attachment> attCandidateList;
     private LotItem lotItem;
 
-    private Map<String,Object> customSetup;
+    private Map<String, Object> customSetup;
 
     public enum BehaviorEnum {
         SKIP,
