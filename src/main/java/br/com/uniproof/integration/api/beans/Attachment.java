@@ -3,7 +3,9 @@ package br.com.uniproof.integration.api.beans;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Data

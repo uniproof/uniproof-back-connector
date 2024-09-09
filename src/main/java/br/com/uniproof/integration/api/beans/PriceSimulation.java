@@ -7,8 +7,8 @@ import java.util.List;
 
 @Data
 public class PriceSimulation {
-	private BigDecimal sellingPrice;
-	private BigDecimal cost;
-	private BigDecimal notaryPrice;
-	List<Price> composition;
+    List<Price> composition;
+    private BigDecimal sellingPrice;
+    private BigDecimal cost;
+    private BigDecimal notaryPrice;
 }

@@ -2,7 +2,8 @@ package br.com.uniproof.integration.api.beans;
 
 import lombok.Data;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class Storage {
@@ -15,4 +16,5 @@ public class Storage {
     private Integer pages;
     private String sha256;
     private String doublesha256;
+    private List<Signer> signers = new ArrayList<>();
 }

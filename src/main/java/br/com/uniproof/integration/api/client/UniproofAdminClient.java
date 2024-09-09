@@ -1,6 +1,6 @@
 package br.com.uniproof.integration.api.client;
 
-import br.com.uniproof.integration.api.beans.*;
+import br.com.uniproof.integration.api.beans.Blockchain;
 import br.com.uniproof.integration.api.config.UniproofClientConfig;
 import feign.Response;
 import org.springframework.cloud.openfeign.FeignClient;
