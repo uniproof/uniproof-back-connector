@@ -1,11 +1,13 @@
 package br.com.uniproof.integration.api.beans;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.beans.Transient;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class User extends Owner {
     private Long id;

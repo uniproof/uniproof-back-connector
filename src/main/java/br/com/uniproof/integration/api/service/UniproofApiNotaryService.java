@@ -10,15 +10,18 @@ import feign.FeignException;
 import feign.Response;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -90,7 +93,8 @@ public class UniproofApiNotaryService {
                 } else {
                     destFile = Files.createTempFile("tmp", "-nonamefile.pdf");
                 }
-                FileUtils.copyInputStreamToFile(response.body().asInputStream(), destFile.toFile());
+                FileOutputStream fos = new FileOutputStream(destFile.toFile());
+                FileCopyUtils.copy(response.body().asInputStream(), fos);
                 return destFile;
             } catch (IOException ioException) {
                 log.error("falha", ioException);
@@ -100,7 +104,7 @@ public class UniproofApiNotaryService {
     }
 
     private Path responseToPath(ResponseEntity<Resource> response) {
-        if (response.getStatusCodeValue() == 200) {
+        if (response.getStatusCode() == HttpStatus.OK) {
             try {
                 String contentDisposition = response.getHeaders().get("content-disposition").toArray()[0].toString();
                 Pattern pattern = Pattern.compile("\"(.*?)\"");
@@ -112,7 +116,9 @@ public class UniproofApiNotaryService {
                 } else {
                     destFile = Files.createTempFile("tmp", "-nonamefile.pdf");
                 }
-                FileUtils.copyInputStreamToFile(response.getBody().getInputStream(), destFile.toFile());
+                FileOutputStream fos = new FileOutputStream(destFile.toFile());
+                FileCopyUtils.copy(response.getBody().getInputStream(), fos);
+
                 return destFile;
             } catch (IOException ioException) {
                 log.error("falha", ioException);
@@ -125,7 +131,8 @@ public class UniproofApiNotaryService {
         try {
             MultipartFile mf = response;
             Path destFile = Files.createTempFile("tmp", "-" + mf.getName());
-            FileUtils.copyInputStreamToFile(mf.getInputStream(), destFile.toFile());
+            FileOutputStream fos = new FileOutputStream(destFile.toFile());
+            FileCopyUtils.copy(mf.getInputStream(), fos);
             return destFile;
         } catch (IOException ioException) {
             log.error("falha", ioException);
