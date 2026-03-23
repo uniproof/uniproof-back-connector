@@ -95,7 +95,7 @@ public class CpfCnpjValidator {
         cnpj = cnpj.replace("/", "");
 
         try {
-            Long.parseLong(cnpj);
+           // Long.parseLong(cnpj);
         } catch (NumberFormatException e) {
             return false;
         }
@@ -160,12 +160,26 @@ public class CpfCnpjValidator {
     public static String returnFirstValidCpfCNPJ(String text) {
         if (!ObjectUtils.isEmpty(text)) {
             for (String part : text.split("[ |]")) {
-                String clean = part.replaceAll("\\D", "");
+                String clean = part;
                 if (!ObjectUtils.isEmpty(clean) && CpfCnpjValidator.isValid(clean) && clean.length() > 10) {
                     return clean;
                 }
             }
         }
         return null;
+    }
+
+    public static void main(String[] args) {
+
+        System.out.println(isValid("4N.44D.P38/1YAM-38"));
+        System.out.println(isValid("4N44DP381YAM38"));
+        System.out.println(isValid("1N.44D.P38/1YAM-38"));
+        System.out.println(isValid("4N44DP381YAM39"));
+
+        System.out.println(returnFirstValidCpfCNPJ("4N.44D.P38/1YAM-38 27878016844"));
+
+
+
+
     }
 }

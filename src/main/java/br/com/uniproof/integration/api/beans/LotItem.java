@@ -44,4 +44,12 @@ public class LotItem {
     private Boolean hasNotification;
     private String parentId;
 
+    private String creatorId;
+    private String couponId;
+    private String currentStatus;
+    private String formTemplateId;
+    private Integer notificationCount;
+    private List<Tag> tags;
+
+
 }
