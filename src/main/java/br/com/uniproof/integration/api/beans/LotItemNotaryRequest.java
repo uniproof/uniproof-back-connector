@@ -12,11 +12,13 @@ import lombok.NoArgsConstructor;
 public class LotItemNotaryRequest {
 
     private String companyToken;
+
     private Integer serviceId;
-    private Integer cityId;
     private String containerId;
     private String name;
     private String description;
+    private Integer cityId;
+    private String parentId;
     private Object form;
 
 }
