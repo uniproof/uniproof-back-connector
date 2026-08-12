@@ -83,6 +83,12 @@ public interface UniproofNotaryClient {
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
+    @RequestMapping(method = RequestMethod.GET, value = "/notaries/roles/{roleOrId}/companies")
+    ResponseEntity<List<Company>> getCompaniesByRoleOrId(
+            @PathVariable("roleOrId") String roleOrId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
     @RequestMapping(method = RequestMethod.POST, value = "/notaries/containers")
     ResponseEntity<Container> createOrGetContainer(
             @RequestBody Container container,

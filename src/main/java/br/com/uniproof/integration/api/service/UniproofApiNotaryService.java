@@ -19,6 +19,10 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileOutputStream;
@@ -182,6 +186,10 @@ public class UniproofApiNotaryService {
 
     public LotItem getLotItemById(String lotItemId, @NonNull String notaryToken) {
         return uniproofNotaryClient.getLotItemById(lotItemId, notaryToken).getBody();
+    }
+
+    public List<Company> getCompaniesByRoleOrId(String roleOrId, String notaryToken) {
+        return uniproofNotaryClient.getCompaniesByRoleOrId(roleOrId, notaryToken).getBody();
     }
 
     public List<LotItem> getLotItemBySha256(String sha256, @NonNull String notaryToken) {
