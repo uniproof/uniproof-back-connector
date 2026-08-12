@@ -3,6 +3,7 @@ package br.com.uniproof.integration.api.client;
 import br.com.uniproof.integration.api.beans.*;
 import br.com.uniproof.integration.api.config.UniproofClientConfig;
 import feign.Headers;
+import feign.Response;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -102,7 +103,7 @@ public interface UniproofNotaryClient {
     );
 
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/documents/{id}/download")
-    ResponseEntity<Resource> getDocumentContentById(
+    Response getDocumentContentById(
             @PathVariable("id") String documentId,
             @RequestParam(value = "version", required = false) Integer version,
             @RequestHeader("X-Company-Token") String notaryToken

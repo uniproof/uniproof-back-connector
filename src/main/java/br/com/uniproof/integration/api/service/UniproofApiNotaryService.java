@@ -141,17 +141,17 @@ public class UniproofApiNotaryService {
     }
 
     public Path getDocumentContentById(String documentId, @NonNull String notaryToken) {
-        ResponseEntity<Resource> response = uniproofNotaryClient.getDocumentContentById(documentId, null, notaryToken);
+        Response response = uniproofNotaryClient.getDocumentContentById(documentId, null, notaryToken);
         return responseToPath(response);
     }
 
     public Path getDocumentVersionContentById(String documentId, Integer version, @NonNull String notaryToken) {
-        ResponseEntity<Resource> response = uniproofNotaryClient.getDocumentContentById(documentId, version, notaryToken);
+        Response response = uniproofNotaryClient.getDocumentContentById(documentId, version, notaryToken);
         return responseToPath(response);
     }
 
     public Path getDocumentOriginalContentById(String documentId, @NonNull String notaryToken) {
-        ResponseEntity<Resource> response = uniproofNotaryClient.getDocumentContentById(documentId, 1, notaryToken);
+        Response response = uniproofNotaryClient.getDocumentContentById(documentId, 1, notaryToken);
         return responseToPath(response);
     }
 
