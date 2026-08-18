@@ -30,7 +30,7 @@ public class UniproofClientConfig {
 
     private String token = "";
 
-    private Date tokenExpiration = new Date();
+    private Date tokenExpiration = new Date(0);
 
 
     @Autowired
@@ -59,23 +59,27 @@ public class UniproofClientConfig {
     }
 
     public String getToken() {
-        if (tokenExpiration.before(new Date())) {
-            token = uniproofCoreApiService.getToken(uniproofApiConfig.getLoginEmail(), uniproofApiConfig.getLoginPass());
+        synchronized (this) {
+            try {
+                if (tokenExpiration.before(new Date())) {
+                    token = uniproofCoreApiService.getToken(uniproofApiConfig.getLoginEmail(), uniproofApiConfig.getLoginPass());
 
-            Base64.Decoder decoder = Base64.getUrlDecoder();
-            String[] chunks = token.split("\\.");
+                    Base64.Decoder decoder = Base64.getUrlDecoder();
+                    String[] chunks = token.split("\\.");
 
-            String header = new String(decoder.decode(chunks[0]));
-            String payload = new String(decoder.decode(chunks[1]));
+                    String payload = new String(decoder.decode(chunks[1]));
 
-            Date sync = new Date();
-            long iat = JsonPath.parse(payload).read("$.iat", Long.class) * 1000;
-            long exp = JsonPath.parse(payload).read("$.exp", Long.class) * 1000;
-            long diff = sync.getTime() - iat;
+                    long iat = JsonPath.parse(payload).read("$.iat", Long.class) * 1000;
+                    long exp = JsonPath.parse(payload).read("$.exp", Long.class) * 1000;
 
-            tokenExpiration.setTime(exp - diff * 50);
+                    long lifetime = exp - iat;
+                    tokenExpiration.setTime(exp - lifetime / 50);
+                }
+                return token;
 
+            } catch (Exception e) {
+                throw new IllegalStateException("Falha ao renovar token Uniproof", e);
+            }
         }
-        return token;
     }
 }
