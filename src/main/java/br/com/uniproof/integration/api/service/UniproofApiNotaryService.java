@@ -15,7 +15,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
+import br.com.uniproof.integration.api.support.ByteArrayMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ObjectUtils;
@@ -259,7 +259,7 @@ public class UniproofApiNotaryService {
                 result = uniproofLargeFilesNotaryClient.uploadFileToLotItem(lotItemId, name, attachmentTypeId, notaryToken, file);
             } else {
                 try (InputStream is = Files.newInputStream(file)) {
-                    MultipartFile mpfile = new MockMultipartFile(
+                    MultipartFile mpfile = new ByteArrayMultipartFile(
                             "file",
                             name,
                             Files.probeContentType(file),
@@ -307,7 +307,7 @@ public class UniproofApiNotaryService {
         }
 
         try (InputStream is = Files.newInputStream(file)) {
-            MultipartFile mpfile = new MockMultipartFile(
+            MultipartFile mpfile = new ByteArrayMultipartFile(
                     "file",
                     name,
                     Files.probeContentType(file),

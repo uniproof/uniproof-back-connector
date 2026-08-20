@@ -6,7 +6,7 @@ import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
+import br.com.uniproof.integration.api.support.ByteArrayMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,7 +49,7 @@ public class UniproofApiUserService {
             String companyToken) {
         LotItem result = null;
         try {
-            MultipartFile mpfile = new MockMultipartFile(
+            MultipartFile mpfile = new ByteArrayMultipartFile(
                     "file",
                     name,
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
