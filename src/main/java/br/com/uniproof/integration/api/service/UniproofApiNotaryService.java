@@ -636,7 +636,26 @@ public class UniproofApiNotaryService {
 
     // =========================================================================
     // Operacoes acrescentadas na cobertura completa do swagger /notaries/doc
+    //
+    // Estes metodos devolvem ApiResponse<T> em vez de lancar: a API sinaliza
+    // falha com status HTTP de erro e corpo {statusCode, message}, e o
+    // UniproofApiErrorDecoder transforma isso em UniproofApiException. Aqui a
+    // excecao e capturada e entregue dentro do objeto de retorno, para o
+    // chamador decidir com isSuccess()/getErrorMessage() sem try/catch.
+    //
+    // Os metodos anteriores a esta secao seguem devolvendo o corpo direto e
+    // propagando a excecao, como sempre fizeram.
     // =========================================================================
+
+    /** Executa a chamada e converte o erro da API no proprio retorno. */
+    private <T> ApiResponse<T> executar(java.util.function.Supplier<ResponseEntity<T>> chamada) {
+        try {
+            ResponseEntity<T> resposta = chamada.get();
+            return ApiResponse.ok(resposta.getStatusCode().value(), resposta.getBody());
+        } catch (UniproofApiException e) {
+            return ApiResponse.fail(e);
+        }
+    }
 
     /**
      * Anexos do processo <strong>ja aninhados pela API</strong> (pai, filho,
@@ -644,13 +663,13 @@ public class UniproofApiNotaryService {
      * {@link #getAttachmentFromLotItem} e montar a arvore localmente com
      * {@link #convertFlatAttachmentListToNestedList}.
      */
-    public List<Attachment> getNestedAttachmentFromLotItem(
+    public ApiResponse<List<Attachment>> getNestedAttachmentFromLotItem(
             String lotItemId,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getNestedAttachmentFromLotItem(
+        return executar(() -> uniproofNotaryClient.getNestedAttachmentFromLotItem(
                 lotItemId,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /**
@@ -660,20 +679,20 @@ public class UniproofApiNotaryService {
      * {@code org.springframework.stereotype.Service}, que sombreia o bean
      * {@code Service} trazido pelo import curinga de beans.</p>
      */
-    public br.com.uniproof.integration.api.beans.Service getServiceByLotItemId(
+    public ApiResponse<br.com.uniproof.integration.api.beans.Service> getServiceByLotItemId(
             String lotItemId,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getServiceByLotItemId(
+        return executar(() -> uniproofNotaryClient.getServiceByLotItemId(
                 lotItemId,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /**
      * Lista os processos da serventia. Todos os filtros sao opcionais; a API
      * pagina por {@code offset}/{@code limit} (default 25 no servidor).
      */
-    public List<LotItem> getLotItems(
+    public ApiResponse<List<LotItem>> getLotItems(
             String lotId,
             String status,
             String search,
@@ -684,7 +703,7 @@ public class UniproofApiNotaryService {
             Integer offset,
             Integer limit,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getLotItems(
+        return executar(() -> uniproofNotaryClient.getLotItems(
                 lotId,
                 status,
                 search,
@@ -695,82 +714,82 @@ public class UniproofApiNotaryService {
                 offset,
                 limit,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /**
      * Relatorio de processos da empresa. As colunas do resultado variam com os
      * filtros informados, por isso vem como mapa em {@link LotItemReport}.
      */
-    public LotItemReport getLotItemsReport(
+    public ApiResponse<LotItemReport> getLotItemsReport(
             Map<String, Object> filtros,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getLotItemsReport(
+        return executar(() -> uniproofNotaryClient.getLotItemsReport(
                 filtros,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Relacao dos documentos dos processos filtrados, sem baixar o ZIP. */
-    public List<DownloadListItem> getLotItemsDownloadList(
+    public ApiResponse<List<DownloadListItem>> getLotItemsDownloadList(
             Map<String, Object> filtros,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getLotItemsDownloadList(
+        return executar(() -> uniproofNotaryClient.getLotItemsDownloadList(
                 filtros,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** URL do ZIP com os documentos dos processos filtrados. */
-    public String getLotItemsZipLink(
+    public ApiResponse<String> getLotItemsZipLink(
             Map<String, Object> filtros,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getLotItemsZipLink(
+        return executar(() -> uniproofNotaryClient.getLotItemsZipLink(
                 filtros,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Tags disponiveis na serventia. */
-    public List<Tag> getTags(
+    public ApiResponse<List<Tag>> getTags(
             String search,
             String sortColumn,
             String sortOrder,
             Integer offset,
             Integer limit,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getTags(
+        return executar(() -> uniproofNotaryClient.getTags(
                 search,
                 sortColumn,
                 sortOrder,
                 offset,
                 limit,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Marca o processo com uma tag existente. */
-    public Tag addTagToLotItem(
+    public ApiResponse<Tag> addTagToLotItem(
             String lotItemId,
             String tagId,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.addTagToLotItem(
+        return executar(() -> uniproofNotaryClient.addTagToLotItem(
                 lotItemId,
                 TagRequest.builder().tagId(tagId).build(),
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Remove a tag do processo. Devolve o corpo cru da resposta ({@code message}). */
-    public String removeTagFromLotItem(
+    public ApiResponse<String> removeTagFromLotItem(
             String lotItemId,
             String tagId,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.removeTagFromLotItem(
+        return executar(() -> uniproofNotaryClient.removeTagFromLotItem(
                 lotItemId,
                 tagId,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /**
@@ -780,13 +799,13 @@ public class UniproofApiNotaryService {
      * @return corpo cru da resposta ({@code message}), como em
      *         {@link #setProtocolOnLotItemById}
      */
-    public String updateWorkflowStatus(
+    public ApiResponse<String> updateWorkflowStatus(
             String lotItemId,
             String status,
             String description,
             Boolean skipBalanceValidation,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.updateWorkflowStatus(
+        return executar(() -> uniproofNotaryClient.updateWorkflowStatus(
                 lotItemId,
                 WorkflowStatusRequest.builder()
                         .status(status)
@@ -794,17 +813,17 @@ public class UniproofApiNotaryService {
                         .skipBalanceValidation(skipBalanceValidation)
                         .build(),
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Troca a serventia responsavel pelo processo, registrando o evento informado. */
-    public String changeLotItemNotary(
+    public ApiResponse<String> changeLotItemNotary(
             String lotItemId,
             String notaryId,
             String comment,
             String event,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.changeLotItemNotary(
+        return executar(() -> uniproofNotaryClient.changeLotItemNotary(
                 lotItemId,
                 NotaryChangeRequest.builder()
                         .notaryId(notaryId)
@@ -812,33 +831,33 @@ public class UniproofApiNotaryService {
                         .event(event)
                         .build(),
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Cria o mesmo evento em varios processos de uma vez. */
-    public List<Event> postNewEventBulk(
+    public ApiResponse<List<Event>> postNewEventBulk(
             List<String> lotItemIds,
             String status,
             String description,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.postNewEventBulk(
+        return executar(() -> uniproofNotaryClient.postNewEventBulk(
                 EventBulkRequest.builder()
                         .lotItemIds(lotItemIds)
                         .status(status)
                         .description(description)
                         .build(),
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Envia os processos ao cartorio (fechamento de carrinho da serventia). */
-    public List<LotItem> sendLotItemsToNotary(
+    public ApiResponse<List<LotItem>> sendLotItemsToNotary(
             NotaryCartRequest cartRequest,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.sendLotItemsToNotary(
+        return executar(() -> uniproofNotaryClient.sendLotItemsToNotary(
                 cartRequest,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /**
@@ -846,39 +865,39 @@ public class UniproofApiNotaryService {
      * um evento com a justificativa. Complementa
      * {@link #updateAttachmentType(String, Integer, String)}, que usa o id.
      */
-    public Attachment updateAttachmentTypeByName(
+    public ApiResponse<Attachment> updateAttachmentTypeByName(
             String attachmentId,
             String attachmentTypeName,
             String reason,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.updateAttachmentTypeByName(
+        return executar(() -> uniproofNotaryClient.updateAttachmentTypeByName(
                 attachmentId,
                 AttachmentTypeUpdateRequest.builder()
                         .attachmentTypeName(attachmentTypeName)
                         .reason(reason)
                         .build(),
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Papeis (roles) de uma empresa. */
-    public List<Role> getRolesByCompanyId(
+    public ApiResponse<List<Role>> getRolesByCompanyId(
             String companyId,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getRolesByCompanyId(
+        return executar(() -> uniproofNotaryClient.getRolesByCompanyId(
                 companyId,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Usuarios visiveis para a serventia. */
-    public List<User> getUsers(
+    public ApiResponse<List<User>> getUsers(
             Long companyId,
             Boolean onlyActive,
             Integer offset,
             Integer limit,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getUsers(
+        return executar(() -> uniproofNotaryClient.getUsers(
                 companyId,
                 onlyActive,
                 null,
@@ -887,51 +906,51 @@ public class UniproofApiNotaryService {
                 offset,
                 limit,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Um usuario pelo id. */
-    public User getUserById(
+    public ApiResponse<User> getUserById(
             String userId,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getUserById(
+        return executar(() -> uniproofNotaryClient.getUserById(
                 userId,
                 null,
                 null,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Cria ou atualiza o endereco de um owner. */
-    public Address createOrUpdateAddress(
+    public ApiResponse<Address> createOrUpdateAddress(
             AddressRequest addressRequest,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.createOrUpdateAddress(
+        return executar(() -> uniproofNotaryClient.createOrUpdateAddress(
                 addressRequest,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Uma opcao de configuracao especifica (por nome), em vez da lista toda. */
-    public Option getOption(
+    public ApiResponse<Option> getOption(
             String ownerType,
             String ownerId,
             String moduleName,
             String name,
             Integer serviceId,
             @NonNull String notaryToken) {
-        return uniproofNotaryClient.getOption(
+        return executar(() -> uniproofNotaryClient.getOption(
                 ownerType,
                 ownerId,
                 moduleName,
                 name,
                 serviceId,
                 notaryToken
-        ).getBody();
+        ));
     }
 
     /** Lotes da serventia. */
-    public List<Lot> getLots(@NonNull String notaryToken) {
-        return uniproofNotaryClient.getLots(notaryToken).getBody();
+    public ApiResponse<List<Lot>> getLots(@NonNull String notaryToken) {
+        return executar(() -> uniproofNotaryClient.getLots(notaryToken));
     }
 }
