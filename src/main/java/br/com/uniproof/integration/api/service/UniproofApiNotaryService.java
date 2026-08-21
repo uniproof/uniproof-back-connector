@@ -634,4 +634,304 @@ public class UniproofApiNotaryService {
         ).getBody();
     }
 
+    // =========================================================================
+    // Operacoes acrescentadas na cobertura completa do swagger /notaries/doc
+    // =========================================================================
+
+    /**
+     * Anexos do processo <strong>ja aninhados pela API</strong> (pai, filho,
+     * neto). Alternativa a buscar a lista plana com
+     * {@link #getAttachmentFromLotItem} e montar a arvore localmente com
+     * {@link #convertFlatAttachmentListToNestedList}.
+     */
+    public List<Attachment> getNestedAttachmentFromLotItem(
+            String lotItemId,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getNestedAttachmentFromLotItem(
+                lotItemId,
+                notaryToken
+        ).getBody();
+    }
+
+    /**
+     * Servico do processo, sem precisar carregar o lot_item inteiro.
+     *
+     * <p>O tipo vem qualificado porque esta classe importa
+     * {@code org.springframework.stereotype.Service}, que sombreia o bean
+     * {@code Service} trazido pelo import curinga de beans.</p>
+     */
+    public br.com.uniproof.integration.api.beans.Service getServiceByLotItemId(
+            String lotItemId,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getServiceByLotItemId(
+                lotItemId,
+                notaryToken
+        ).getBody();
+    }
+
+    /**
+     * Lista os processos da serventia. Todos os filtros sao opcionais; a API
+     * pagina por {@code offset}/{@code limit} (default 25 no servidor).
+     */
+    public List<LotItem> getLotItems(
+            String lotId,
+            String status,
+            String search,
+            String parentId,
+            Boolean archived,
+            String sortColumn,
+            String sortOrder,
+            Integer offset,
+            Integer limit,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getLotItems(
+                lotId,
+                status,
+                search,
+                parentId,
+                archived,
+                sortColumn,
+                sortOrder,
+                offset,
+                limit,
+                notaryToken
+        ).getBody();
+    }
+
+    /**
+     * Relatorio de processos da empresa. As colunas do resultado variam com os
+     * filtros informados, por isso vem como mapa em {@link LotItemReport}.
+     */
+    public LotItemReport getLotItemsReport(
+            Map<String, Object> filtros,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getLotItemsReport(
+                filtros,
+                notaryToken
+        ).getBody();
+    }
+
+    /** Relacao dos documentos dos processos filtrados, sem baixar o ZIP. */
+    public List<DownloadListItem> getLotItemsDownloadList(
+            Map<String, Object> filtros,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getLotItemsDownloadList(
+                filtros,
+                notaryToken
+        ).getBody();
+    }
+
+    /** URL do ZIP com os documentos dos processos filtrados. */
+    public String getLotItemsZipLink(
+            Map<String, Object> filtros,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getLotItemsZipLink(
+                filtros,
+                notaryToken
+        ).getBody();
+    }
+
+    /** Tags disponiveis na serventia. */
+    public List<Tag> getTags(
+            String search,
+            String sortColumn,
+            String sortOrder,
+            Integer offset,
+            Integer limit,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getTags(
+                search,
+                sortColumn,
+                sortOrder,
+                offset,
+                limit,
+                notaryToken
+        ).getBody();
+    }
+
+    /** Marca o processo com uma tag existente. */
+    public Tag addTagToLotItem(
+            String lotItemId,
+            String tagId,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.addTagToLotItem(
+                lotItemId,
+                TagRequest.builder().tagId(tagId).build(),
+                notaryToken
+        ).getBody();
+    }
+
+    /** Remove a tag do processo. Devolve o corpo cru da resposta ({@code message}). */
+    public String removeTagFromLotItem(
+            String lotItemId,
+            String tagId,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.removeTagFromLotItem(
+                lotItemId,
+                tagId,
+                notaryToken
+        ).getBody();
+    }
+
+    /**
+     * Move o processo para outro status do workflow.
+     *
+     * @param skipBalanceValidation pula a validacao de saldo da carteira
+     * @return corpo cru da resposta ({@code message}), como em
+     *         {@link #setProtocolOnLotItemById}
+     */
+    public String updateWorkflowStatus(
+            String lotItemId,
+            String status,
+            String description,
+            Boolean skipBalanceValidation,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.updateWorkflowStatus(
+                lotItemId,
+                WorkflowStatusRequest.builder()
+                        .status(status)
+                        .description(description)
+                        .skipBalanceValidation(skipBalanceValidation)
+                        .build(),
+                notaryToken
+        ).getBody();
+    }
+
+    /** Troca a serventia responsavel pelo processo, registrando o evento informado. */
+    public String changeLotItemNotary(
+            String lotItemId,
+            String notaryId,
+            String comment,
+            String event,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.changeLotItemNotary(
+                lotItemId,
+                NotaryChangeRequest.builder()
+                        .notaryId(notaryId)
+                        .comment(comment)
+                        .event(event)
+                        .build(),
+                notaryToken
+        ).getBody();
+    }
+
+    /** Cria o mesmo evento em varios processos de uma vez. */
+    public List<Event> postNewEventBulk(
+            List<String> lotItemIds,
+            String status,
+            String description,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.postNewEventBulk(
+                EventBulkRequest.builder()
+                        .lotItemIds(lotItemIds)
+                        .status(status)
+                        .description(description)
+                        .build(),
+                notaryToken
+        ).getBody();
+    }
+
+    /** Envia os processos ao cartorio (fechamento de carrinho da serventia). */
+    public List<LotItem> sendLotItemsToNotary(
+            NotaryCartRequest cartRequest,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.sendLotItemsToNotary(
+                cartRequest,
+                notaryToken
+        ).getBody();
+    }
+
+    /**
+     * Troca o tipo de um anexo pelo <strong>nome</strong> do tipo, registrando
+     * um evento com a justificativa. Complementa
+     * {@link #updateAttachmentType(String, Integer, String)}, que usa o id.
+     */
+    public Attachment updateAttachmentTypeByName(
+            String attachmentId,
+            String attachmentTypeName,
+            String reason,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.updateAttachmentTypeByName(
+                attachmentId,
+                AttachmentTypeUpdateRequest.builder()
+                        .attachmentTypeName(attachmentTypeName)
+                        .reason(reason)
+                        .build(),
+                notaryToken
+        ).getBody();
+    }
+
+    /** Papeis (roles) de uma empresa. */
+    public List<Role> getRolesByCompanyId(
+            String companyId,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getRolesByCompanyId(
+                companyId,
+                notaryToken
+        ).getBody();
+    }
+
+    /** Usuarios visiveis para a serventia. */
+    public List<User> getUsers(
+            Long companyId,
+            Boolean onlyActive,
+            Integer offset,
+            Integer limit,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getUsers(
+                companyId,
+                onlyActive,
+                null,
+                null,
+                null,
+                offset,
+                limit,
+                notaryToken
+        ).getBody();
+    }
+
+    /** Um usuario pelo id. */
+    public User getUserById(
+            String userId,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getUserById(
+                userId,
+                null,
+                null,
+                notaryToken
+        ).getBody();
+    }
+
+    /** Cria ou atualiza o endereco de um owner. */
+    public Address createOrUpdateAddress(
+            AddressRequest addressRequest,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.createOrUpdateAddress(
+                addressRequest,
+                notaryToken
+        ).getBody();
+    }
+
+    /** Uma opcao de configuracao especifica (por nome), em vez da lista toda. */
+    public Option getOption(
+            String ownerType,
+            String ownerId,
+            String moduleName,
+            String name,
+            Integer serviceId,
+            @NonNull String notaryToken) {
+        return uniproofNotaryClient.getOption(
+                ownerType,
+                ownerId,
+                moduleName,
+                name,
+                serviceId,
+                notaryToken
+        ).getBody();
+    }
+
+    /** Lotes da serventia. */
+    public List<Lot> getLots(@NonNull String notaryToken) {
+        return uniproofNotaryClient.getLots(notaryToken).getBody();
+    }
 }
