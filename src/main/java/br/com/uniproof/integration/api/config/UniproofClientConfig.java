@@ -6,11 +6,12 @@ import feign.Logger;
 import feign.RequestInterceptor;
 import feign.Retryer;
 import feign.codec.Encoder;
+import feign.codec.ErrorDecoder;
 import feign.form.spring.SpringFormEncoder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.context.annotation.Bean;
 
@@ -34,7 +35,7 @@ public class UniproofClientConfig {
 
 
     @Autowired
-    private ObjectFactory<HttpMessageConverters> messageConverters;
+    private ObjectProvider<FeignHttpMessageConverters> messageConverters;
 
     @Bean
     Logger.Level feignLoggerLevelBackConnector() {
@@ -44,6 +45,16 @@ public class UniproofClientConfig {
     @Bean
     public Retryer retryerBackConnector() {
         return new Retryer.Default(100, SECONDS.toMillis(10), 10);
+    }
+
+    /**
+     * Traduz as respostas de erro da API em UniproofApiException, com o corpo
+     * {@code {statusCode, message}} interpretado. Herda de FeignException, para
+     * nao invalidar os {@code catch (FeignException)} que ja existem.
+     */
+    @Bean
+    public ErrorDecoder errorDecoderBackConnector() {
+        return new UniproofApiErrorDecoder();
     }
 
     @Bean
