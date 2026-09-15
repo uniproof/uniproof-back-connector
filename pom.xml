@@ -6,11 +6,11 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.7</version>
+        <version>4.1.1</version>
     </parent>
     <groupId>br.com.uniproof.service</groupId>
     <artifactId>uniproof-back-connector</artifactId>
-    <version>3.5.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:git@github.com:uniproof/uniproof-back-connector.git</connection>
@@ -28,7 +28,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>21</java.version>
-        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <spring-cloud.version>2025.1.2</spring-cloud.version>
     </properties>
     <dependencies>
         <dependency>
@@ -51,9 +51,12 @@
             <artifactId>json-path</artifactId>
         </dependency>
 
+        <!-- optional: processador de anotacoes de compilacao, nao e dependencia
+             de runtime. Os consumidores declaram lombok por conta propria. -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
     <dependencyManagement>

@@ -439,10 +439,10 @@ public class UniproofApiNotaryService {
                     .build();
 
             ResponseEntity postexigencia2 = postNewEvent(event, notaryToken);
-            if (postexigencia2.getStatusCodeValue() >= 300) {
+            if (postexigencia2.getStatusCode().value() >= 300) {
                 throw new RuntimeException("Erro movendo status " + status + " - lot_item_id: " + lotItemId + " motivo: " + postexigencia2.getBody());
             }
-            return postexigencia2.getStatusCodeValue() < 300;
+            return postexigencia2.getStatusCode().value() < 300;
         }
         return false;
     }
