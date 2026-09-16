@@ -50,6 +50,7 @@ public class LotItem {
     private String formTemplateId;
     private Integer notificationCount;
     private List<Tag> tags;
+    private String publicKey;
 
 
 }

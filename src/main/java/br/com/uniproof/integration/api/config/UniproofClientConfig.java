@@ -6,11 +6,12 @@ import feign.Logger;
 import feign.RequestInterceptor;
 import feign.Retryer;
 import feign.codec.Encoder;
+import feign.codec.ErrorDecoder;
 import feign.form.spring.SpringFormEncoder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.context.annotation.Bean;
 
@@ -30,11 +31,11 @@ public class UniproofClientConfig {
 
     private String token = "";
 
-    private Date tokenExpiration = new Date();
+    private Date tokenExpiration = new Date(0);
 
 
     @Autowired
-    private ObjectFactory<HttpMessageConverters> messageConverters;
+    private ObjectProvider<FeignHttpMessageConverters> messageConverters;
 
     @Bean
     Logger.Level feignLoggerLevelBackConnector() {
@@ -44,6 +45,16 @@ public class UniproofClientConfig {
     @Bean
     public Retryer retryerBackConnector() {
         return new Retryer.Default(100, SECONDS.toMillis(10), 10);
+    }
+
+    /**
+     * Traduz as respostas de erro da API em UniproofApiException, com o corpo
+     * {@code {statusCode, message}} interpretado. Herda de FeignException, para
+     * nao invalidar os {@code catch (FeignException)} que ja existem.
+     */
+    @Bean
+    public ErrorDecoder errorDecoderBackConnector() {
+        return new UniproofApiErrorDecoder();
     }
 
     @Bean
@@ -59,23 +70,27 @@ public class UniproofClientConfig {
     }
 
     public String getToken() {
-        if (tokenExpiration.before(new Date())) {
-            token = uniproofCoreApiService.getToken(uniproofApiConfig.getLoginEmail(), uniproofApiConfig.getLoginPass());
+        synchronized (this) {
+            try {
+                if (tokenExpiration.before(new Date())) {
+                    token = uniproofCoreApiService.getToken(uniproofApiConfig.getLoginEmail(), uniproofApiConfig.getLoginPass());
 
-            Base64.Decoder decoder = Base64.getUrlDecoder();
-            String[] chunks = token.split("\\.");
+                    Base64.Decoder decoder = Base64.getUrlDecoder();
+                    String[] chunks = token.split("\\.");
 
-            String header = new String(decoder.decode(chunks[0]));
-            String payload = new String(decoder.decode(chunks[1]));
+                    String payload = new String(decoder.decode(chunks[1]));
 
-            Date sync = new Date();
-            long iat = JsonPath.parse(payload).read("$.iat", Long.class) * 1000;
-            long exp = JsonPath.parse(payload).read("$.exp", Long.class) * 1000;
-            long diff = sync.getTime() - iat;
+                    long iat = JsonPath.parse(payload).read("$.iat", Long.class) * 1000;
+                    long exp = JsonPath.parse(payload).read("$.exp", Long.class) * 1000;
 
-            tokenExpiration.setTime(exp - diff * 50);
+                    long lifetime = exp - iat;
+                    tokenExpiration.setTime(exp - lifetime / 50);
+                }
+                return token;
 
+            } catch (Exception e) {
+                throw new IllegalStateException("Falha ao renovar token Uniproof", e);
+            }
         }
-        return token;
     }
 }

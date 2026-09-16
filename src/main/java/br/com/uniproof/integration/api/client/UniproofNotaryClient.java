@@ -3,7 +3,9 @@ package br.com.uniproof.integration.api.client;
 import br.com.uniproof.integration.api.beans.*;
 import br.com.uniproof.integration.api.config.UniproofClientConfig;
 import feign.Headers;
+import feign.Response;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 
 @FeignClient(name = "notaries", url = "${uniproof.api.restUrl}", configuration = UniproofClientConfig.class)
@@ -62,6 +65,28 @@ public interface UniproofNotaryClient {
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
+    @GetMapping(value = "/notaries/lot_items/{lotItemId}/attachments/nested", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<Attachment>> getNestedAttachmentFromLotItem(
+            @PathVariable("lotItemId") String lotItemId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @PostMapping(value = "/notaries/attachments/bulk", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<Attachment>> uploadAttachmentToManyLotItems(
+            @RequestPart(value = "file", required = true) MultipartFile file,
+            @RequestPart(value = "attachmentTypeId", required = true) Integer attachmentTypeId,
+            @RequestPart(value = "lotItemIds", required = true) List<String> lotItemIds,
+            @RequestPart(value = "parentId", required = false) String parentId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @PutMapping(value = "/notaries/attachments/{id}/attachment_type", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Attachment> updateAttachmentTypeByName(
+            @PathVariable("id") String attachmentId,
+            @RequestBody AttachmentTypeUpdateRequest body,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
     //Cart
     @RequestMapping(method = RequestMethod.POST, value = "/api/carts", consumes = "application/json")
     ResponseEntity<List<CartItem>> sendCartItems(
@@ -75,10 +100,22 @@ public interface UniproofNotaryClient {
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
+    @PostMapping(value = "/notaries/cart", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<LotItem>> sendLotItemsToNotary(
+            @RequestBody NotaryCartRequest body,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
     //Containers
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/containers/{containerId}")
     ResponseEntity<Container> getContainerById(
             @PathVariable("containerId") String containerId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @RequestMapping(method = RequestMethod.GET, value = "/notaries/roles/{roleOrId}/companies")
+    ResponseEntity<List<Company>> getCompaniesByRoleOrId(
+            @PathVariable("roleOrId") String roleOrId,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
@@ -102,7 +139,7 @@ public interface UniproofNotaryClient {
     );
 
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/documents/{id}/download")
-    ResponseEntity<Resource> getDocumentContentById(
+    Response getDocumentContentById(
             @PathVariable("id") String documentId,
             @RequestParam(value = "version", required = false) Integer version,
             @RequestHeader("X-Company-Token") String notaryToken
@@ -112,6 +149,12 @@ public interface UniproofNotaryClient {
     ResponseEntity<Storage> getStorageByDocumentIdAndVersion(
             @PathVariable("id") String documentId,
             @PathVariable("version") Integer version,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @GetMapping(value = "/notaries/downloads/{filename}")
+    Response downloadByFilename(
+            @PathVariable("filename") String filename,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
@@ -153,6 +196,11 @@ public interface UniproofNotaryClient {
     ResponseEntity<Object> setLotJsonObjectById(
             @PathVariable("id") String lotId,
             @RequestBody Object form,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @GetMapping(value = "/notaries/lots", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<Lot>> getLots(
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
@@ -204,10 +252,87 @@ public interface UniproofNotaryClient {
             @RequestBody(required = true) String protocol
     );
 
+    @GetMapping(value = "/notaries/lot_items", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<LotItem>> getLotItems(
+            @RequestParam(value = "lotId", required = false) String lotId,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "parentId", required = false) String parentId,
+            @RequestParam(value = "archived", required = false) Boolean archived,
+            @RequestParam(value = "sortColumn", required = false) String sortColumn,
+            @RequestParam(value = "sortOrder", required = false) String sortOrder,
+            @RequestParam(value = "offset", required = false) Integer offset,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @GetMapping(value = "/notaries/lot_items/report", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<LotItemReport> getLotItemsReport(
+            @SpringQueryMap Map<String, Object> filtros,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @GetMapping(value = "/notaries/lot_items/download")
+    Response downloadLotItemsZip(
+            @SpringQueryMap Map<String, Object> filtros,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @PostMapping(value = "/notaries/lot_items/download", consumes = MediaType.APPLICATION_JSON_VALUE)
+    Response downloadLotItemsZipPost(
+            @RequestBody Map<String, Object> filtros,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @GetMapping(value = "/notaries/lot_items/download_link")
+    ResponseEntity<String> getLotItemsZipLink(
+            @SpringQueryMap Map<String, Object> filtros,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @PostMapping(value = "/notaries/lot_items/download_link", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<String> getLotItemsZipLinkPost(
+            @RequestBody Map<String, Object> filtros,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @GetMapping(value = "/notaries/lot_items/download_list", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<DownloadListItem>> getLotItemsDownloadList(
+            @SpringQueryMap Map<String, Object> filtros,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @PutMapping(value = "/notaries/lot_items/{id}/notary", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<String> changeLotItemNotary(
+            @PathVariable("id") String lotItemId,
+            @RequestBody NotaryChangeRequest body,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @PostMapping(value = "/notaries/lot_items/{id}/tags", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Tag> addTagToLotItem(
+            @PathVariable("id") String lotItemId,
+            @RequestBody TagRequest body,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @DeleteMapping(value = "/notaries/lot_items/{id}/tags/{tagId}")
+    ResponseEntity<String> removeTagFromLotItem(
+            @PathVariable("id") String lotItemId,
+            @PathVariable("tagId") String tagId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
     //Events
     @RequestMapping(method = RequestMethod.POST, value = "/notaries/events")
     ResponseEntity<Event> postNewEvent(
             Event evento,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @PostMapping(value = "/notaries/events/bulk", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<Event>> postNewEventBulk(
+            @RequestBody EventBulkRequest body,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
@@ -245,6 +370,12 @@ public interface UniproofNotaryClient {
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
+    @GetMapping(value = "/notaries/lot_items/{lotItemId}/service", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Service> getServiceByLotItemId(
+            @PathVariable("lotItemId") String lotItemId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
     //Owners
     @RequestMapping(method = RequestMethod.GET, value = "/notaries/owners/{type}/{id}")
     ResponseEntity<Company> getOwner(
@@ -270,6 +401,16 @@ public interface UniproofNotaryClient {
             @RequestParam(value = "ownerType", required = false) String ownerType,
             @RequestParam(value = "ownerId", required = false) Long ownerId,
             @RequestParam(value = "moduleName", required = false) String moduleName,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @GetMapping(value = "/notaries/option", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Option> getOption(
+            @RequestParam(value = "ownerType", required = false) String ownerType,
+            @RequestParam(value = "ownerId", required = false) String ownerId,
+            @RequestParam(value = "moduleName", required = false) String moduleName,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "serviceId", required = false) Integer serviceId,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 
@@ -304,6 +445,60 @@ public interface UniproofNotaryClient {
     @RequestMapping(method = RequestMethod.POST, value = "/notaries/wallets/balance")
     ResponseEntity<Wallet> addBalanceLotItemWallet(
             @RequestBody WalletBalanceRequest walletRequest,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    //Addresses
+    @PostMapping(value = "/notaries/addresses", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Address> createOrUpdateAddress(
+            @RequestBody AddressRequest body,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    //Roles
+    @GetMapping(value = "/notaries/companies/{companyId}/roles", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<Role>> getRolesByCompanyId(
+            @PathVariable("companyId") String companyId,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    //Tags
+    @GetMapping(value = "/notaries/tags", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<Tag>> getTags(
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "sortColumn", required = false) String sortColumn,
+            @RequestParam(value = "sortOrder", required = false) String sortOrder,
+            @RequestParam(value = "offset", required = false) Integer offset,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    //Users
+    @GetMapping(value = "/notaries/users", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<User>> getUsers(
+            @RequestParam(value = "companyId", required = false) Long companyId,
+            @RequestParam(value = "onlyActive", required = false) Boolean onlyActive,
+            @RequestParam(value = "includeExternalPermissions", required = false) Boolean includeExternalPermissions,
+            @RequestParam(value = "sortColumn", required = false) String sortColumn,
+            @RequestParam(value = "sortOrder", required = false) String sortOrder,
+            @RequestParam(value = "offset", required = false) Integer offset,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    @GetMapping(value = "/notaries/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<User> getUserById(
+            @PathVariable("id") String userId,
+            @RequestParam(value = "companyId", required = false) Long companyId,
+            @RequestParam(value = "includeExternalPermissions", required = false) Boolean includeExternalPermissions,
+            @RequestHeader("X-Company-Token") String notaryToken
+    );
+
+    //Workflow
+    @PutMapping(value = "/notaries/workflow/{lotItemId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<String> updateWorkflowStatus(
+            @PathVariable("lotItemId") String lotItemId,
+            @RequestBody WorkflowStatusRequest body,
             @RequestHeader("X-Company-Token") String notaryToken
     );
 }

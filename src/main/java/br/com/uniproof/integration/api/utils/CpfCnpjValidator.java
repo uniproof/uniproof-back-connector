@@ -171,12 +171,15 @@ public class CpfCnpjValidator {
 
     public static void main(String[] args) {
 
-        System.out.println(isValid("4N.44D.P38/1YAM-38"));
-        System.out.println(isValid("4N44DP381YAM38"));
-        System.out.println(isValid("1N.44D.P38/1YAM-38"));
-        System.out.println(isValid("4N44DP381YAM39"));
+        System.out.println(returnFirstValidCpfCNPJ("64218888000388"));
+        System.out.println(isValid("64218888000388"));
 
-        System.out.println(returnFirstValidCpfCNPJ("4N.44D.P38/1YAM-38 27878016844"));
+        //System.out.println(isValid("4N.44D.P38/1YAM-38"));
+        //System.out.println(isValid("4N44DP381YAM38"));
+        //System.out.println(isValid("1N.44D.P38/1YAM-38"));
+        //System.out.println(isValid("4N44DP381YAM39"));
+
+        //System.out.println(returnFirstValidCpfCNPJ("4N.44D.P38/1YAM-38 27878016844"));
 
 
 

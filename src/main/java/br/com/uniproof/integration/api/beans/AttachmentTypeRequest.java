@@ -3,10 +3,12 @@ package br.com.uniproof.integration.api.beans;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @Builder
+@NoArgsConstructor
 public class AttachmentTypeRequest {
     private Integer attachmentTypeId;
     private String attachmentId;

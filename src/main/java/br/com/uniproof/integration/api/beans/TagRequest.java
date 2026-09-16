@@ -5,15 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
+/**
+ * Corpo de {@code POST /notaries/lot_items/{id}/tags}.
+ */
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class WalletCreateRequest {
+@NoArgsConstructor
+public class TagRequest {
 
-    private String containerId;
-    private BigDecimal credit;
-
+    private String tagId;
 }
