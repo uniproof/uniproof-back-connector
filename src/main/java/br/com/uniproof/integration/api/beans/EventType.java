@@ -11,4 +11,8 @@ public class EventType {
     private String label;
     private Boolean active;
     private Boolean visible;
+    /** true = muda o status do processo; false = evento. So vem com {@code details=true}. */
+    private Boolean changeLastEvent;
+    /** So vem com {@code details=true}. */
+    private Boolean registered;
 }
