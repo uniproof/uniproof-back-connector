@@ -65,7 +65,11 @@ public class UniproofClientConfig {
     @Bean
     public RequestInterceptor requestInterceptorBackConnector() {
         return requestTemplate -> {
-            requestTemplate.header("Authorization", "Bearer " + getToken());
+            // Chamada "em nome do usuario" (metodos *AsUser do UniproofUserClient) ja traz o
+            // token de quem esta na tela; as demais seguem com o token do usuario de servico.
+            if (!requestTemplate.headers().containsKey("Authorization")) {
+                requestTemplate.header("Authorization", "Bearer " + getToken());
+            }
         };
     }
 

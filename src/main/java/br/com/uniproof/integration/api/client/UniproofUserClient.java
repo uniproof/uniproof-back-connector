@@ -172,6 +172,38 @@ public interface UniproofUserClient {
     List<EventType> listEventType(
             @RequestHeader("X-Company-Token") String companyToken);
 
+    // -------------------------------------------------------------------------
+    // Em nome do usuario: o token vem de quem esta usando a tela (ex.: a
+    // administracao da integracao ERP), e nao do usuario de servico. O
+    // interceptor do UniproofClientConfig respeita o Authorization informado.
+    // -------------------------------------------------------------------------
+
+    /** Empresas do usuario dono do token (inclui token e kind de cada uma). */
+    @RequestMapping(method = RequestMethod.GET, value = "/api/companies")
+    List<Company> getCompaniesAsUser(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam(value = "details", required = false) Boolean details);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/api/attachment_types")
+    List<AttachmentType> listAttachmentTypeAsUser(
+            @RequestHeader("Authorization") String authorization,
+            @RequestHeader("X-Company-Token") String companyToken);
+
+    /**
+     * @param details true inclui visible, changeLastEvent e registered (parametro da API;
+     *                sem ele o retorno e so name e label)
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/api/event_types")
+    List<EventType> listEventTypeAsUser(
+            @RequestHeader("Authorization") String authorization,
+            @RequestHeader("X-Company-Token") String companyToken,
+            @RequestParam(value = "details", required = false) Boolean details);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/api/services")
+    List<Service> getServicesAsUser(
+            @RequestHeader("Authorization") String authorization,
+            @RequestHeader("X-Company-Token") String companyToken);
+
     @RequestMapping(method = RequestMethod.GET, value = "/api/wallets", consumes = "application/json")
     ResponseEntity<Wallet> getWalletBalance(
             @RequestParam(value = "containerId", required = false) String containerId,
