@@ -4,6 +4,7 @@ import br.com.uniproof.integration.api.beans.ApiError;
 import br.com.uniproof.integration.api.beans.UniproofApiException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.RetryableException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +27,35 @@ import java.nio.charset.StandardCharsets;
  * o Heroku devolve quando a aplicacao esta reiniciando) nao quebram nada: ficam
  * disponiveis crus em {@link UniproofApiException#getRawBody()}.</p>
  *
- * <p><strong>Retry:</strong> o decoder padrao so produzia
- * {@code RetryableException} quando a resposta trazia o header
- * {@code Retry-After}, que esta API nao envia. O comportamento efetivo de
- * retentativa, portanto, nao muda com esta classe.</p>
+ * <p><strong>Rate limit:</strong> every error response from the API is
+ * counted in the {@link UniproofRateLimiter} error budget, and a 429 becomes a
+ * {@link RetryableException} (status 429, with the original
+ * {@link UniproofApiException} as cause and the time from {@code Retry-After})
+ * so that {@link UniproofRetryer} sends the request again. Responses from other
+ * hosts (e.g. the Lacuna signature service) do not touch the limiter.</p>
  */
 @Slf4j
 public class UniproofApiErrorDecoder implements ErrorDecoder {
 
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    private final UniproofRateLimiter rateLimiter;
+    private final String apiUrl;
+
+    /** Without a rate limiter: errors are only translated, never retried. */
+    public UniproofApiErrorDecoder() {
+        this(null, null);
+    }
+
+    /**
+     * @param apiUrl base URL of the Uniproof API; only its responses count
+     *               against the rate limit (null counts every response)
+     */
+    public UniproofApiErrorDecoder(UniproofRateLimiter rateLimiter, String apiUrl) {
+        this.rateLimiter = rateLimiter;
+        this.apiUrl = apiUrl;
+    }
 
     @Override
     public Exception decode(String methodKey, Response response) {
@@ -46,6 +66,16 @@ public class UniproofApiErrorDecoder implements ErrorDecoder {
                 response.status(), erro, texto, methodKey,
                 response.request(), corpo, response.headers());
         log.debug("Erro da API Uniproof em [{}]: {}", methodKey, excecao.getMessage());
+
+        if (rateLimiter == null || !daApiUniproof(response)) {
+            return excecao;
+        }
+        long retryAt = rateLimiter.retryAt(nome -> primeiroHeader(response, nome));
+        rateLimiter.recordError(response.status(), retryAt);
+        if (response.status() == UniproofRateLimiter.TOO_MANY_REQUESTS && response.request() != null) {
+            return new RetryableException(response.status(), excecao.getMessage(),
+                    response.request().httpMethod(), excecao, retryAt, response.request());
+        }
         return excecao;
     }
 
@@ -64,6 +94,21 @@ public class UniproofApiErrorDecoder implements ErrorDecoder {
             log.warn("Nao foi possivel ler o corpo do erro da API Uniproof: {}", e.getMessage());
             return null;
         }
+    }
+
+    private boolean daApiUniproof(Response response) {
+        return apiUrl == null || response.request() == null || response.request().url().startsWith(apiUrl);
+    }
+
+    private static String primeiroHeader(Response response, String nome) {
+        if (response.headers() == null) {
+            return null;
+        }
+        return response.headers().entrySet().stream()
+                .filter(h -> h.getKey() != null && h.getKey().equalsIgnoreCase(nome))
+                .flatMap(h -> h.getValue().stream())
+                .findFirst()
+                .orElse(null);
     }
 
     /** Devolve {@code null} quando o corpo nao e um objeto JSON de erro. */

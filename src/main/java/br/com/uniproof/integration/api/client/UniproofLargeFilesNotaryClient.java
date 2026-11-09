@@ -2,6 +2,7 @@ package br.com.uniproof.integration.api.client;
 
 import br.com.uniproof.integration.api.beans.Attachment;
 import br.com.uniproof.integration.api.config.UniproofApiConfig;
+import br.com.uniproof.integration.api.config.UniproofRateLimiter;
 import br.com.uniproof.integration.api.service.UniproofApiCoreService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,9 @@ public class UniproofLargeFilesNotaryClient {
     @Autowired
     private UniproofApiConfig uniproofApiConfig;
 
+    @Autowired
+    private UniproofRateLimiter rateLimiter;
+
     public Attachment uploadFileToLotItem(String lotItemId, String name, Integer attachmentId, String notaryToken, Path file) {
         Attachment result = null;
         try {
@@ -58,8 +62,8 @@ public class UniproofLargeFilesNotaryClient {
 
             String serverUrl = uniproofApiConfig.getRestUrl() + "/notaries/lot_items/" + lotItemId + "/attachments";
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<Attachment> response = restTemplate
-                    .postForEntity(serverUrl, requestEntity, Attachment.class);
+            ResponseEntity<Attachment> response = rateLimiter.execute(() -> restTemplate
+                    .postForEntity(serverUrl, requestEntity, Attachment.class));
             Files.deleteIfExists(novoNome);
             return response.getBody();
 
