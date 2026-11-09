@@ -18,7 +18,6 @@ import org.springframework.context.annotation.Bean;
 import java.util.Base64;
 import java.util.Date;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Slf4j
 public class UniproofClientConfig {
@@ -42,9 +41,28 @@ public class UniproofClientConfig {
         return Logger.Level.BASIC;
     }
 
+    @Autowired
+    private UniproofRateLimiter rateLimiter;
+
+    /** 429 is sent again after the wait the API asked for; I/O failures keep the previous policy. */
     @Bean
     public Retryer retryerBackConnector() {
-        return new Retryer.Default(100, SECONDS.toMillis(10), 10);
+        return new UniproofRetryer(rateLimiter);
+    }
+
+    /**
+     * Waits for a slot inside the API rate limit before each attempt (Feign runs
+     * the interceptors again on every retry). Other hosts, such as the Lacuna
+     * signature service, are not limited.
+     */
+    @Bean
+    public RequestInterceptor rateLimitInterceptorBackConnector() {
+        return requestTemplate -> {
+            String url = requestTemplate.feignTarget() != null ? requestTemplate.feignTarget().url() : null;
+            if (url == null || url.startsWith(uniproofApiConfig.getRestUrl())) {
+                rateLimiter.acquire();
+            }
+        };
     }
 
     /**
@@ -54,7 +72,7 @@ public class UniproofClientConfig {
      */
     @Bean
     public ErrorDecoder errorDecoderBackConnector() {
-        return new UniproofApiErrorDecoder();
+        return new UniproofApiErrorDecoder(rateLimiter, uniproofApiConfig.getRestUrl());
     }
 
     @Bean

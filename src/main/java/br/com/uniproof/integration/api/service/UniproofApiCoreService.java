@@ -2,6 +2,7 @@ package br.com.uniproof.integration.api.service;
 
 import br.com.uniproof.integration.api.beans.Token;
 import br.com.uniproof.integration.api.config.UniproofApiConfig;
+import br.com.uniproof.integration.api.config.UniproofRateLimiter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,6 +20,9 @@ public class UniproofApiCoreService {
     @Autowired
     UniproofApiConfig uniproofApiConfig;
 
+    @Autowired
+    UniproofRateLimiter rateLimiter;
+
 
     public String getToken(String login, String Pass) {
 
@@ -30,7 +34,7 @@ public class UniproofApiCoreService {
         params.put("email", uniproofApiConfig.getLoginEmail());
         params.put("password", uniproofApiConfig.getLoginPass());
 
-        Token result = restTemplate.postForObject(uri, params, Token.class);
+        Token result = rateLimiter.execute(() -> restTemplate.postForObject(uri, params, Token.class));
 
         return result.getToken();
     }
