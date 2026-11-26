@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Used by the Heroku build to resolve the uniproof artifacts from GitHub Packages.
+  The Java buildpack picks up this file at the app root and passes it to Maven with -s.
+
+  Credentials are NOT stored here. Maven interpolates ${env.*} in settings.xml, so the
+  user and token come from environment variables - on Heroku, from config vars:
+
+      heroku config:set GITHUB_PACKAGES_USER=<user> GITHUB_PACKAGES_TOKEN=<token> -a <app>
+
+  The token only needs the read:packages scope to resolve dependencies. Publishing
+  artifacts (mvn deploy) is done locally with each person's ~/.m2/settings.xml and does
+  not depend on this file.
+
+  Local builds are unaffected: Maven uses ~/.m2/settings.xml by default. Only whoever runs
+  Maven explicitly with -s settings.xml needs both variables exported.
+-->
 <settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
@@ -53,13 +69,13 @@
     <servers>
         <server>
             <id>github-uniproof-back-connector</id>
-            <username>napalmsp</username>
-            <password>b94964d140e562b3e39edd55ad095fab989b522c</password>
+            <username>${env.GITHUB_PACKAGES_USER}</username>
+            <password>${env.GITHUB_PACKAGES_TOKEN}</password>
         </server>
         <server>
             <id>github-uniproof-java-service</id>
-            <username>napalmsp</username>
-            <password>b94964d140e562b3e39edd55ad095fab989b522c</password>
+            <username>${env.GITHUB_PACKAGES_USER}</username>
+            <password>${env.GITHUB_PACKAGES_TOKEN}</password>
         </server>
     </servers>
 </settings>
