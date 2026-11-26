@@ -282,6 +282,34 @@ public class UniproofApiUserService {
                 companyToken);
     }
 
+    // =========================================================================
+    // Em nome do usuario: {@code authorization} e o header completo
+    // ("Bearer <jwt>") de quem esta na tela, repassado como veio.
+    // =========================================================================
+
+    /** Empresas do usuario dono do token - usado para conferir se ele e admin. */
+    public List<Company> getCompaniesAsUser(String authorization) {
+        return uniproofApiClient.getCompaniesAsUser(authorization, null);
+    }
+
+    /** Empresas do usuario com userAdmin e userPermission ({@code details=true}). */
+    public List<Company> getCompaniesWithDetailsAsUser(String authorization) {
+        return uniproofApiClient.getCompaniesAsUser(authorization, true);
+    }
+
+    public List<AttachmentType> listAttachmentTypeAsUser(String authorization, String companyToken) {
+        return uniproofApiClient.listAttachmentTypeAsUser(authorization, companyToken);
+    }
+
+    /** Status/eventos com visible, changeLastEvent e registered ({@code details=true}). */
+    public List<EventType> listEventTypeWithDetailsAsUser(String authorization, String companyToken) {
+        return uniproofApiClient.listEventTypeAsUser(authorization, companyToken, true);
+    }
+
+    public List<br.com.uniproof.integration.api.beans.Service> getServicesAsUser(String authorization, String companyToken) {
+        return uniproofApiClient.getServicesAsUser(authorization, companyToken);
+    }
+
     public ResponseEntity<Wallet> getWalletBalance(
             String containerId,
             String companyToken) {

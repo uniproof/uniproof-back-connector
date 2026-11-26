@@ -60,8 +60,8 @@ class UniproofNotaryClientIT {
     @Configuration
     @EnableAutoConfiguration
     @EnableFeignClients(clients = UniproofNotaryClient.class)
-    @Import({UniproofApiConfig.class, UniproofApiCoreService.class, UniproofApiNotaryService.class,
-            UniproofLargeFilesNotaryClient.class})
+    @Import({UniproofApiConfig.class, UniproofApiCoreService.class,
+            UniproofApiNotaryService.class, UniproofLargeFilesNotaryClient.class})
     static class TestConfig {
     }
 

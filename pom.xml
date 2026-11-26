@@ -41,6 +41,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Boot 4 split the message converter auto-configuration out of the core;
+             the apps get it from their web starter, the Spring context tests need it here. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-http-converter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
